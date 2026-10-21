@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Founders.EditorTools
 {
@@ -25,6 +27,7 @@ namespace Founders.EditorTools
             Directory.CreateDirectory(GeneratedFolder);
             AssetDatabase.Refresh();
 
+            EnsureUrp();
             WorldAssetCatalogBuilder.BuildCatalog();
             WorldAssetCatalogBuilder.CreateSettings();
 
@@ -87,6 +90,48 @@ namespace Founders.EditorTools
             Selection.activeGameObject = world;
 
             Debug.Log("Created " + ScenePath + ". The world streams a 16.384km square region; inspect the asset catalog and tune device performance before release.");
+        }
+
+        private static void EnsureUrp()
+        {
+            var pipeline = FindUrpAsset();
+            if (pipeline == null)
+            {
+                Selection.activeObject = AssetDatabase.LoadAssetAtPath<DefaultAsset>(GeneratedFolder);
+                EditorApplication.ExecuteMenuItem("Assets/Create/Rendering/URP Asset (with Universal Renderer)");
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                pipeline = FindUrpAsset();
+            }
+
+            if (pipeline == null)
+            {
+                Debug.LogWarning("URP package is present, but a Universal Render Pipeline Asset could not be created.");
+                return;
+            }
+
+            GraphicsSettings.defaultRenderPipeline = pipeline;
+            var activeQuality = QualitySettings.GetQualityLevel();
+            for (var i = 0; i < QualitySettings.names.Length; i++)
+            {
+                QualitySettings.SetQualityLevel(i, false);
+                QualitySettings.renderPipeline = pipeline;
+            }
+            QualitySettings.SetQualityLevel(activeQuality, false);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static UniversalRenderPipelineAsset FindUrpAsset()
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:UniversalRenderPipelineAsset", new[] { GeneratedFolder }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(path);
+                if (pipeline != null)
+                    return pipeline;
+            }
+
+            return null;
         }
 
         private static SeasonDefinition EnsurePrehistoricSeason()
