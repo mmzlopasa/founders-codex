@@ -12,6 +12,8 @@ namespace Founders.World
     /// </summary>
     public sealed class WorldStreamer : MonoBehaviour
     {
+        public static event Action FirstChunkGenerated;
+        public static bool HasGeneratedAnyChunk { get; private set; }
         [SerializeField] private WorldGenerationSettings settings;
         [SerializeField] private WorldAssetCatalog assetCatalog;
         [SerializeField] private Transform focus;
@@ -136,6 +138,12 @@ namespace Founders.World
                 data = data,
                 props = propRoot.transform
             });
+
+            if (!HasGeneratedAnyChunk)
+            {
+                HasGeneratedAnyChunk = true;
+                FirstChunkGenerated?.Invoke();
+            }
         }
 
         private void BuildHeights(TerrainData data, Vector2Int coordinate)
@@ -458,6 +466,7 @@ namespace Founders.World
             }
             loaded.Clear();
             wanted.Clear();
+            HasGeneratedAnyChunk = false;
         }
 
 #if UNITY_EDITOR
