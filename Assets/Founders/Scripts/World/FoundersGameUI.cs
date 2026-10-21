@@ -15,7 +15,7 @@ namespace Founders.World
         [SerializeField] private WorldAssetCatalog assetCatalog;
         [SerializeField] private BuildingPlacementController buildingPlacement;
         [SerializeField] private SettlementProgression progression;
-        [SerializeField] private ResidentRoster residents;
+        [SerializeField] private ResidentRoster residents;\n        [SerializeField] private SettlementResearch research;
         [SerializeField] private SeasonDirector seasonDirector;
 
         private Text resourcesText;
@@ -26,7 +26,7 @@ namespace Founders.World
         private Text loadingLabel;
         private GameObject loadingOverlay;
         private Text[] residentLines;
-        private Button[] residentJobButtons;
+        private Button[] residentJobButtons;\n        private Text seasonRewardButtonLabel;\n        private Text researchStatus;\n        private Button[] researchButtons;
         private Text farmBoostButtonLabel;
         private Text constructionSpeedupButtonLabel;
         private Sprite panelSprite;
@@ -106,7 +106,7 @@ namespace Founders.World
             CreateResidentsPanel(safeRoot);
             CreateProgressionPanel(safeRoot);
             CreateBuildingPanel(safeRoot);
-            CreateSeasonPanel(safeRoot);
+            CreateSeasonPanel(safeRoot);\n            CreateResearchPanel(safeRoot);
             CreateLoadingOverlay(root);
         }
 
@@ -427,7 +427,7 @@ namespace Founders.World
                 }
             }
 
-            if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
+            if (seasonRewardButtonLabel != null && seasonDirector != null)\n            {\n                seasonRewardButtonLabel.text = seasonDirector.CanClaimReward ? "Claim completed event reward" : "EVENT REWARD";\n                seasonRewardButtonLabel.color = seasonDirector.CanClaimReward ? Color.white : new Color(1f, 1f, 1f, 0.55f);\n            }\n\n            if (research != null && researchStatus != null)\n            {\n                researchStatus.text = research.StatusMessage;\n                var flags = new[] { research.StoneToolsUnlocked, research.CropRotationUnlocked, research.OrganizedBuildingUnlocked };\n                for (var i = 0; i < researchButtons.Length; i++)\n                {\n                    researchButtons[i].interactable = !flags[i] && (i == 0 || research.StoneToolsUnlocked);\n                    if (flags[i]) researchButtons[i].GetComponentInChildren<Text>().text = new[] { "Stone Tools", "Crop Rotation", "Organized Building" }[i] + " · COMPLETE";\n                }\n            }\n\n            if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
             {
                 var season = seasonDirector.ActiveSeason;
                 var eventLine = string.Empty;
