@@ -54,6 +54,9 @@ namespace Founders.World
         {
             if (data == null)
                 data = new ResearchData();
+            var progression = SettlementProgression.Instance;
+            if (progression != null && progression.NeedsCampfire)
+                return Locked("Place your Campfire before researching.");
             var save = WorldSaveSystem.Instance;
             int food = 0, wood = 0, stone = 0;
             switch (researchId)
@@ -65,11 +68,13 @@ namespace Founders.World
                 case "crop-rotation":
                     if (data.cropRotation) return AlreadyKnown("Crop rotation");
                     if (!data.stoneTools) return Locked("Research Stone Tools first.");
+                    if (progression != null && progression.CampfireLevel < 2) return Locked("Crop Rotation unlocks at Campfire level 2.");
                     food = 25; wood = 15; stone = 10;
                     break;
                 case "organized-building":
                     if (data.organizedBuilding) return AlreadyKnown("Organized building");
                     if (!data.stoneTools) return Locked("Research Stone Tools first.");
+                    if (progression != null && progression.CampfireLevel < 3) return Locked("Organized Building unlocks at Campfire level 3.");
                     food = 20; wood = 30; stone = 25;
                     break;
                 default:
