@@ -25,7 +25,9 @@ The player can build anywhere on the map. A building clears vegetation and natur
 - Free building placement on terrain, with trees and rocks removed under the building footprint.
 - Tap vegetation and rocks to gather food, wood, and stone.
 - Local device saves for buildings, resources, cleared natural props, season clock, event progress, resident jobs, and population.
-- Campfire-first settlement progression, level-based unlocks, a timed construction queue, and construction/farming speedups.\n- Residents with assignable jobs, skill levels, resource production, households, and nonsexual parent-to-child mentoring.\n- A Unity Editor generator that scans imported assets and UI sprites, builds the prehistoric catalog, and creates the starter scene.
+- Campfire-first settlement progression, level-based unlocks, a timed construction queue, and construction/farming speedups.
+- Residents with assignable jobs, skill levels, resource production, households, and nonsexual parent-to-child mentoring.
+- A Unity Editor generator that scans imported assets and UI sprites, builds the prehistoric catalog, and creates the starter scene.
 - A manual GitHub Actions workflow for remote iOS Xcode project export.
 
 ## Pending before an asset-complete IPA
