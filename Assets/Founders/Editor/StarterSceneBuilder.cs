@@ -37,6 +37,7 @@ namespace Founders.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
             var world = new GameObject("World Streamer");
+            world.AddComponent<WorldSaveSystem>();
             var streamer = world.AddComponent<WorldStreamer>();
             var serializedStreamer = new SerializedObject(streamer);
             serializedStreamer.FindProperty("settings").objectReferenceValue = settings;
