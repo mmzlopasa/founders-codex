@@ -33,6 +33,7 @@ namespace Founders.World
             public int stone;
             public int constructionSpeedups = 3;
             public int farmingSpeedups = 2;
+            public int seasonPoints;
         }
 
         private SaveData data = new SaveData();
@@ -44,6 +45,7 @@ namespace Founders.World
         public int Stone => data.stone;
         public int ConstructionSpeedups => data.constructionSpeedups;
         public int FarmingSpeedups => data.farmingSpeedups;
+        public int SeasonPoints => data.seasonPoints;
 
         private void Awake()
         {
@@ -98,7 +100,7 @@ namespace Founders.World
             return true;
         }
 
-        public bool TrySpendFarmingSpeedup()
+        public void AddSeasonPoints(int amount)\n        {\n            data.seasonPoints += Mathf.Max(0, amount);\n            Save();\n        }\n\n        public void AddSpeedups(int construction, int farming)\n        {\n            data.constructionSpeedups += Mathf.Max(0, construction);\n            data.farmingSpeedups += Mathf.Max(0, farming);\n            Save();\n        }\n\n        public bool TrySpendFarmingSpeedup()
         {
             if (data.farmingSpeedups <= 0)
                 return false;
