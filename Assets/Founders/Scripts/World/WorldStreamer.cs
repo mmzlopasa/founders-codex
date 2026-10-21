@@ -292,6 +292,15 @@ namespace Founders.World
                     continue;
 
                 var prefab = prefabs[random.Next(prefabs.Length)];
+                var yaw = (float)random.NextDouble() * 360f;
+                var scale = Mathf.Lerp(
+                    settings.minimumPropScale,
+                    settings.maximumPropScale,
+                    (float)random.NextDouble());
+                var stableId = coordinate.x + ":" + coordinate.y + ":" + (int)kind + ":" + i;
+                var save = WorldSaveSystem.Instance;
+                if (save != null && save.WasNaturalPropCleared(stableId))
+                    continue;
                 if (prefab == null)
                     continue;
 
@@ -299,17 +308,14 @@ namespace Founders.World
                 var instance = Instantiate(
                     prefab,
                     new Vector3(worldX, worldY, worldZ),
-                    Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f),
+                    Quaternion.Euler(0f, yaw, 0f),
                     root);
 
-                var scale = Mathf.Lerp(
-                    settings.minimumPropScale,
-                    settings.maximumPropScale,
-                    (float)random.NextDouble());
                 instance.transform.localScale *= scale;
 
                 var marker = instance.AddComponent<NaturalPropMarker>();
                 marker.kind = kind;
+                marker.stableId = stableId;
                 marker.EnsureBoundsCollider();
             }
         }
