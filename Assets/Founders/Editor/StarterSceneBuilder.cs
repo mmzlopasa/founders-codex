@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.IO;
+using Founders.Seasons;
 using Founders.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -15,6 +16,7 @@ namespace Founders.EditorTools
         private const string GeneratedFolder = "Assets/Founders/Generated";
         private const string CatalogPath = GeneratedFolder + "/WorldAssetCatalog.asset";
         private const string SettingsPath = GeneratedFolder + "/WorldGenerationSettings.asset";
+        private const string SeasonPath = GeneratedFolder + "/PrehistoricSeason.asset";
 
         [MenuItem("Founders/World/Create Prehistoric Starter Scene")]
         private static void CreateScene()
@@ -28,6 +30,7 @@ namespace Founders.EditorTools
 
             var catalog = AssetDatabase.LoadAssetAtPath<WorldAssetCatalog>(CatalogPath);
             var settings = AssetDatabase.LoadAssetAtPath<WorldGenerationSettings>(SettingsPath);
+            var season = EnsurePrehistoricSeason();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
             var world = new GameObject("World Streamer");
@@ -56,9 +59,15 @@ namespace Founders.EditorTools
             camera.transform.LookAt(Vector3.zero);
             camera.gameObject.AddComponent<MobileMapCamera>();
 
+            var seasonDirector = world.AddComponent<SeasonDirector>();
+            var serializedSeason = new SerializedObject(seasonDirector);
+            serializedSeason.FindProperty("season").objectReferenceValue = season;
+            serializedSeason.ApplyModifiedPropertiesWithoutUndo();
+
             var placer = world.AddComponent<BuildingPlacementController>();
             var serializedPlacer = new SerializedObject(placer);
             serializedPlacer.FindProperty("assetCatalog").objectReferenceValue = catalog;
+            serializedPlacer.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
             serializedPlacer.FindProperty("mapCamera").objectReferenceValue = camera;
             serializedPlacer.ApplyModifiedPropertiesWithoutUndo();
 
@@ -76,6 +85,63 @@ namespace Founders.EditorTools
             Selection.activeGameObject = world;
 
             Debug.Log("Created " + ScenePath + ". The world streams a 16.384km square region; inspect the asset catalog and tune device performance before release.");
+        }
+
+        private static SeasonDefinition EnsurePrehistoricSeason()
+        {
+            var season = AssetDatabase.LoadAssetAtPath<SeasonDefinition>(SeasonPath);
+            if (season != null)
+                return season;
+
+            season = ScriptableObject.CreateInstance<SeasonDefinition>();
+            season.seasonId = "season-01-prehistoric";
+            season.displayName = "Prehistoric Civilization";
+            season.eraLabel = "Stone Age";
+            season.durationDays = 56;
+            season.introduction = "Begin with a small camp and grow a thriving prehistoric settlement.";
+            season.events = new[]
+            {
+                new SeasonEventDefinition
+                {
+                    eventId = "first-settlement",
+                    title = "Found the settlement",
+                    description = "Place three buildings to establish the first village.",
+                    objective = SeasonObjective.PlaceBuildings,
+                    startsOnDay = 0,
+                    durationDays = 7,
+                    progressGoal = 3,
+                    rewardLabel = "Season points",
+                    rewardAmount = 100
+                },
+                new SeasonEventDefinition
+                {
+                    eventId = "stone-age-tools",
+                    title = "Stone for survival",
+                    description = "Gather stone for the next stage of the settlement.",
+                    objective = SeasonObjective.GatherStone,
+                    startsOnDay = 7,
+                    durationDays = 14,
+                    progressGoal = 150,
+                    rewardLabel = "Season points",
+                    rewardAmount = 150
+                },
+                new SeasonEventDefinition
+                {
+                    eventId = "winter-stores",
+                    title = "Prepare the stores",
+                    description = "Gather food before the cold season.",
+                    objective = SeasonObjective.GatherFood,
+                    startsOnDay = 21,
+                    durationDays = 14,
+                    progressGoal = 250,
+                    rewardLabel = "Season points",
+                    rewardAmount = 200
+                }
+            };
+
+            AssetDatabase.CreateAsset(season, SeasonPath);
+            AssetDatabase.SaveAssets();
+            return season;
         }
     }
 }
