@@ -27,6 +27,13 @@ Koristiti kao smjer i, kada su datoteke dostupne u projektu, izvor za likove, od
 
 Uvezene modele i animacije prvo katalogizirati u Unity Editoru. Ne pretpostavljati putanje ili nazive prefaba prije pregleda sadržaja stvarnog Unity paketa. Ne kopirati Asset Store datoteke u javni repozitorij dok se ne potvrde uvjeti distribucije licence; držati izvorne assete u Unity projektu ili u odobrenom privatnom spremištu.
 
+### Sučelje i gradnje — obavezni dodatni paketi
+
+- [Adventure UI Kit](https://assetstore.unity.com/packages/2d/gui/adventure-ui-kit-376222) is the visual source for HUD panels, buttons, icons, menus, and loading-screen elements. Its listing reports URP compatibility.
+- [Viking Village | 3D Sample Project](https://assetstore.unity.com/packages/3d/environments/viking-village-3d-sample-project-29140) is an additional source of settlement buildings and props. Its current listing reports URP compatibility and a 1.7 GB package, so the remote import should inventory the sample first and include only needed licensed content in the game build.
+- Keep the first season visually Stone Age. Use selected structures from the Viking package only where their shape and materials suit the prehistoric settlement; do not replace Stone Age characters and props wholesale with a Viking-era theme.
+- Use broad gameplay conventions from *Foundation* and *Whiteout Survival* as inspiration for original colony management, resident work, upgrades, research, timed construction, and seasonal events. Do not reproduce their art, branding, screens, or proprietary content.
+
 ## 3. Svijet i mapa
 
 Mapa mora djelovati kao vrlo velik, koherentan svijet, a ne kao skup malih odvojenih arena.
