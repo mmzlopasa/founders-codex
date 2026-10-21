@@ -68,6 +68,17 @@ namespace Founders.EditorTools
             serializedSeason.FindProperty("season").objectReferenceValue = season;
             serializedSeason.ApplyModifiedPropertiesWithoutUndo();
 
+            var progression = world.AddComponent<SettlementProgression>();
+            var serializedProgression = new SerializedObject(progression);
+            serializedProgression.FindProperty("assetCatalog").objectReferenceValue = catalog;
+            serializedProgression.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
+            serializedProgression.ApplyModifiedPropertiesWithoutUndo();
+
+            var residents = world.AddComponent<ResidentRoster>();
+            var serializedResidents = new SerializedObject(residents);
+            serializedResidents.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
+            serializedResidents.ApplyModifiedPropertiesWithoutUndo();
+
             var placer = world.AddComponent<BuildingPlacementController>();
             var serializedPlacer = new SerializedObject(placer);
             serializedPlacer.FindProperty("assetCatalog").objectReferenceValue = catalog;
