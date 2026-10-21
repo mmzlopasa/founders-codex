@@ -93,6 +93,8 @@ namespace Founders.World
             public List<ResidentHousehold> households = new List<ResidentHousehold>();
         }
 
+        public static ResidentRoster Instance { get; private set; }
+
         private RosterData data = new RosterData();
         private float dayTimer;
         private Vector2 rosterScroll;
@@ -100,12 +102,37 @@ namespace Founders.World
 
         public IReadOnlyList<ResidentRecord> Residents => data.residents;
         public long GameDay => data.gameDay;
+        public float ConstructionSpeedMultiplier
+        {
+            get
+            {
+                var builderCount = 0;
+                var builderLevels = 0;
+                foreach (var resident in data.residents)
+                {
+                    if (resident.LifeStage == ResidentLifeStage.Adult && resident.job == ResidentJob.Builder)
+                    {
+                        builderCount++;
+                        builderLevels += resident.jobLevel;
+                    }
+                }
+
+                return Mathf.Clamp(1f - builderCount * 0.12f - builderLevels * 0.025f, 0.45f, 1f);
+            }
+        }
 
         private void Awake()
         {
+            Instance = this;
             Load();
             if (data.residents.Count == 0)
                 CreateStartingPopulation();
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
         }
 
         private void Update()
