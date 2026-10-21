@@ -21,6 +21,9 @@ namespace Founders.World
         private readonly Dictionary<Vector2Int, ChunkInstance> loaded = new Dictionary<Vector2Int, ChunkInstance>();
         private readonly HashSet<Vector2Int> wanted = new HashSet<Vector2Int>();
         private Coroutine streamRoutine;
+        private GameObject waterSurface;
+        private Material runtimeWaterMaterial;
+        private Mesh waterMesh;
 
         private sealed class ChunkInstance
         {
@@ -52,6 +55,7 @@ namespace Founders.World
 
                 if (focus != null && settings != null)
                 {
+                    EnsureWaterSurface();
                     RefreshWantedChunks();
                     UnloadUnwantedChunks();
 
@@ -169,7 +173,7 @@ namespace Founders.World
             var edgeDistance = Mathf.Max(Mathf.Abs(worldX), Mathf.Abs(worldZ)) / halfWorld;
             var fadeStart = 1f - settings.shorelineFalloff;
             var edgeBlend = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, fadeStart, edgeDistance));
-            var land = settings.shorelineHeight + broad * 0.56f + detail * 0.08f;
+            var land = settings.shorelineHeight + (broad - 0.35f) * 0.74f + (detail - 0.5f) * 0.1f;
             return Mathf.Lerp(settings.shorelineHeight, Mathf.Clamp01(land), edgeBlend);
         }
 
@@ -356,8 +360,89 @@ namespace Founders.World
             }
         }
 
+        private void EnsureWaterSurface()
+        {
+            if (waterSurface != null)
+                return;
+
+            var half = settings.WorldSizeMeters * 0.5f;
+            waterMesh = new Mesh { name = "Founders World Water" };
+            waterMesh.vertices = new[]
+            {
+                new Vector3(-half, 0f, -half),
+                new Vector3(half, 0f, -half),
+                new Vector3(half, 0f, half),
+                new Vector3(-half, 0f, half)
+            };
+            waterMesh.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
+            waterMesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
+            waterMesh.RecalculateNormals();
+            waterMesh.RecalculateBounds();
+
+            waterSurface = new GameObject("World Water Surface");
+            waterSurface.transform.SetParent(transform, false);
+            waterSurface.transform.position = new Vector3(
+                0f,
+                settings.shorelineHeight * settings.terrainHeightMeters,
+                0f);
+
+            var filter = waterSurface.AddComponent<MeshFilter>();
+            filter.sharedMesh = waterMesh;
+            var renderer = waterSurface.AddComponent<MeshRenderer>();
+            runtimeWaterMaterial = FindWaterMaterial();
+            if (runtimeWaterMaterial == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null)
+                    shader = Shader.Find("Standard");
+                if (shader != null)
+                {
+                    runtimeWaterMaterial = new Material(shader);
+                    runtimeWaterMaterial.color = new Color(0.24f, 0.58f, 0.62f, 1f);
+                }
+            }
+
+            renderer.sharedMaterial = runtimeWaterMaterial;
+            if (runtimeWaterMaterial != null && runtimeWaterMaterial.mainTexture != null)
+            {
+                var tileCount = settings.WorldSizeMeters / 64f;
+                runtimeWaterMaterial.mainTextureScale = new Vector2(tileCount, tileCount);
+            }
+        }
+
+        private Material FindWaterMaterial()
+        {
+            if (assetCatalog == null || assetCatalog.waterPrefabs == null)
+                return null;
+
+            foreach (var prefab in assetCatalog.waterPrefabs)
+            {
+                if (prefab == null || prefab.name.IndexOf("waterfall", StringComparison.OrdinalIgnoreCase) >= 0)
+                    continue;
+
+                var renderers = prefab.GetComponentsInChildren<Renderer>(true);
+                foreach (var prefabRenderer in renderers)
+                {
+                    if (prefabRenderer.sharedMaterial != null)
+                        return new Material(prefabRenderer.sharedMaterial);
+                }
+            }
+
+            return null;
+        }
+
         private void ClearWorld()
         {
+            if (waterSurface != null)
+                Destroy(waterSurface);
+            waterSurface = null;
+            if (runtimeWaterMaterial != null)
+                Destroy(runtimeWaterMaterial);
+            runtimeWaterMaterial = null;
+            if (waterMesh != null)
+                Destroy(waterMesh);
+            waterMesh = null;
+
             foreach (var chunk in loaded.Values)
             {
                 if (chunk.terrain != null)
