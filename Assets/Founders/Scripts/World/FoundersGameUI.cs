@@ -27,6 +27,8 @@ namespace Founders.World
         private GameObject loadingOverlay;
         private Text[] residentLines;
         private Button[] residentJobButtons;
+        private Text farmBoostButtonLabel;
+        private Text constructionSpeedupButtonLabel;
         private Sprite panelSprite;
         private Sprite buttonSprite;
 
@@ -147,12 +149,13 @@ namespace Founders.World
                     new Vector2(260f, -rowY), new Vector2(150f, 38f), () => CycleResidentJob(residentIndex));
             }
 
-            CreateButton(panel.transform, "Farm Boost", "Farm boost",
+            var farmBoostButton = CreateButton(panel.transform, "Farm Boost", "Farm boost",
                 new Vector2(18f, -455f), new Vector2(184f, 48f), () =>
                 {
                     if (residents != null)
                         residents.UseFarmingSpeedup();
                 });
+            farmBoostButtonLabel = farmBoostButton.GetComponentInChildren<Text>();
             CreateButton(panel.transform, "Pair Residents", "Pair adults",
                 new Vector2(210f, -455f), new Vector2(200f, 48f), () =>
                 {
@@ -173,12 +176,13 @@ namespace Founders.World
                     if (progression != null)
                         progression.TryUpgradeCampfire();
                 });
-            CreateButton(panel.transform, "Construction Speedup", "Speed up",
+            var constructionSpeedupButton = CreateButton(panel.transform, "Construction Speedup", "Speed up",
                 new Vector2(210f, -82f), new Vector2(200f, 50f), () =>
                 {
                     if (progression != null)
                         progression.TryUseConstructionSpeedup();
                 });
+            constructionSpeedupButtonLabel = constructionSpeedupButton.GetComponentInChildren<Text>();
             progressionMessage = CreateLabel(panel.transform, "Progression Message", string.Empty,
                 new Vector2(18f, -145f), new Vector2(394f, 58f), 16, TextAnchor.MiddleLeft);
         }
@@ -381,6 +385,13 @@ namespace Founders.World
                       "     BUILD QUEUE " + progression.QueuedBuildings;
                 if (progressionMessage != null)
                     progressionMessage.text = progression.StatusMessage;
+                if (constructionSpeedupButtonLabel != null)
+                {
+                    var activeName = progression.ActiveConstructionName;
+                    constructionSpeedupButtonLabel.text = string.IsNullOrEmpty(activeName)
+                        ? "Speed up"
+                        : "Speed up · " + Mathf.CeilToInt(progression.ActiveConstructionRemaining) + "s";
+                }
             }
 
             if (buildingPlacement != null && buildingHint != null)
@@ -392,6 +403,12 @@ namespace Founders.World
 
             if (residents != null)
             {
+                if (farmBoostButtonLabel != null)
+                {
+                    var saveState = WorldSaveSystem.Instance;
+                    farmBoostButtonLabel.text = "Farm boost · " +
+                        (saveState != null ? saveState.FarmingSpeedups : 0) + " left";
+                }
                 for (var i = 0; i < residentLines.Length; i++)
                 {
                     var present = i < residents.Residents.Count;
