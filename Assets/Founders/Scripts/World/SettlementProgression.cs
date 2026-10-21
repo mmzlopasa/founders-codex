@@ -148,7 +148,8 @@ namespace Founders.World
                 prefabName = prefab.name,
                 position = position,
                 eulerAngles = rotation.eulerAngles,
-                secondsRemaining = GetBuildTime(prefab.name)
+                secondsRemaining = GetBuildTime(prefab.name) *
+                    (ResidentRoster.Instance != null ? ResidentRoster.Instance.ConstructionSpeedMultiplier : 1f)
             });
             message = "Construction started: " + prefab.name + ".";
             Save();
