@@ -59,7 +59,7 @@ namespace Founders.EditorTools
             camera.farClipPlane = 2200f;
             camera.allowHDR = false;
             camera.allowMSAA = false;
-            camera.transform.position = new Vector3(0f, 330f, -430f);
+            camera.transform.position = new Vector3(0f, 175f, -220f);
             camera.transform.LookAt(Vector3.zero);
             camera.gameObject.AddComponent<MobileMapCamera>();
 
