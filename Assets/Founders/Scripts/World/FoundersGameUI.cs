@@ -139,11 +139,12 @@ namespace Founders.World
             residentJobButtons = new Button[8];
             for (var i = 0; i < residentLines.Length; i++)
             {
-                var rowY = 62f + i * 44f;
-                residentLines[i] = CreateLabel(panel.transform, "Resident " + i, string.Empty,
+                var residentIndex = i;
+                var rowY = 62f + residentIndex * 44f;
+                residentLines[residentIndex] = CreateLabel(panel.transform, "Resident " + residentIndex, string.Empty,
                     new Vector2(20f, -rowY), new Vector2(230f, 38f), 18, TextAnchor.MiddleLeft);
-                residentJobButtons[i] = CreateButton(panel.transform, "Job " + i, "Job",
-                    new Vector2(260f, -rowY), new Vector2(150f, 38f), () => CycleResidentJob(i));
+                residentJobButtons[residentIndex] = CreateButton(panel.transform, "Job " + residentIndex, "Job",
+                    new Vector2(260f, -rowY), new Vector2(150f, 38f), () => CycleResidentJob(residentIndex));
             }
 
             CreateButton(panel.transform, "Farm Boost", "Farm boost",
