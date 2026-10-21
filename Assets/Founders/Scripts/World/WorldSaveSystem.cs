@@ -28,12 +28,18 @@ namespace Founders.World
         {
             public List<PlacedBuilding> buildings = new List<PlacedBuilding>();
             public List<string> clearedNaturalProps = new List<string>();
+            public int food;
+            public int wood;
+            public int stone;
         }
 
         private SaveData data = new SaveData();
         private HashSet<string> clearedLookup = new HashSet<string>();
 
         public IReadOnlyList<PlacedBuilding> Buildings => data.buildings;
+        public int Food => data.food;
+        public int Wood => data.wood;
+        public int Stone => data.stone;
 
         private void Awake()
         {
@@ -64,6 +70,14 @@ namespace Founders.World
                 return;
 
             data.clearedNaturalProps.Add(stableId);
+            Save();
+        }
+
+        public void AddResources(int food, int wood, int stone)
+        {
+            data.food += Mathf.Max(0, food);
+            data.wood += Mathf.Max(0, wood);
+            data.stone += Mathf.Max(0, stone);
             Save();
         }
 
