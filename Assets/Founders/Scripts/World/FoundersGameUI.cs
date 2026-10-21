@@ -216,9 +216,37 @@ namespace Founders.World
         private void CreateSeasonPanel(RectTransform root)
         {
             var panel = CreatePanel(root, "Season Panel", new Vector2(0f, 1f), new Vector2(0f, 1f),
-                new Vector2(470f, -18f), new Vector2(385f, 105f), new Vector2(0f, 1f));
+                new Vector2(470f, -18f), new Vector2(385f, 164f), new Vector2(0f, 1f));
             seasonText = CreateLabel(panel.transform, "Season Status", "PREHISTORIC CIVILIZATION",
                 new Vector2(16f, -10f), new Vector2(353f, 84f), 20, TextAnchor.MiddleLeft);
+            var rewardButton = CreateButton(panel.transform, "Claim Event Reward", "Claim event reward",
+                new Vector2(16f, -110f), new Vector2(353f, 42f), () =>
+                {
+                    if (seasonDirector != null) seasonDirector.TryClaimReward();
+                });
+            seasonRewardButtonLabel = rewardButton.GetComponentInChildren<Text>();
+        }
+
+        private void CreateResearchPanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Research Panel", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                new Vector2(-18f, -35f), new Vector2(430f, 255f), Vector2.one);
+            CreateLabel(panel.transform, "Research Title", "PREHISTORIC RESEARCH",
+                new Vector2(18f, -12f), new Vector2(394f, 36f), 22, TextAnchor.MiddleLeft);
+            researchButtons = new Button[3];
+            var ids = new[] { "stone-tools", "crop-rotation", "organized-building" };
+            var labels = new[] { "Stone Tools · 10F 15W 10S", "Crop Rotation · 25F 15W 10S", "Organized Building · 20F 30W 25S" };
+            for (var i = 0; i < ids.Length; i++)
+            {
+                var index = i;
+                researchButtons[i] = CreateButton(panel.transform, "Research " + ids[i], labels[i],
+                    new Vector2(18f, -55f - i * 52f), new Vector2(394f, 44f), () =>
+                    {
+                        if (research != null) research.TryResearch(ids[index]);
+                    });
+            }
+            researchStatus = CreateLabel(panel.transform, "Research Status", string.Empty,
+                new Vector2(18f, -218f), new Vector2(394f, 30f), 15, TextAnchor.MiddleLeft);
         }
 
         private void CreateLoadingOverlay(RectTransform root)
@@ -427,7 +455,25 @@ namespace Founders.World
                 }
             }
 
-            if (seasonRewardButtonLabel != null && seasonDirector != null)\n            {\n                seasonRewardButtonLabel.text = seasonDirector.CanClaimReward ? "Claim completed event reward" : "EVENT REWARD";\n                seasonRewardButtonLabel.color = seasonDirector.CanClaimReward ? Color.white : new Color(1f, 1f, 1f, 0.55f);\n            }\n\n            if (research != null && researchStatus != null)\n            {\n                researchStatus.text = research.StatusMessage;\n                var flags = new[] { research.StoneToolsUnlocked, research.CropRotationUnlocked, research.OrganizedBuildingUnlocked };\n                for (var i = 0; i < researchButtons.Length; i++)\n                {\n                    researchButtons[i].interactable = !flags[i] && (i == 0 || research.StoneToolsUnlocked);\n                    if (flags[i]) researchButtons[i].GetComponentInChildren<Text>().text = new[] { "Stone Tools", "Crop Rotation", "Organized Building" }[i] + " · COMPLETE";\n                }\n            }\n\n            if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
+            if (seasonRewardButtonLabel != null && seasonDirector != null)
+            {
+                seasonRewardButtonLabel.text = seasonDirector.CanClaimReward ? "Claim completed event reward" : "EVENT REWARD";
+                seasonRewardButtonLabel.color = seasonDirector.CanClaimReward ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+            }
+
+            if (research != null && researchStatus != null)
+            {
+                researchStatus.text = research.StatusMessage;
+                var flags = new[] { research.StoneToolsUnlocked, research.CropRotationUnlocked, research.OrganizedBuildingUnlocked };
+                var labels = new[] { "Stone Tools", "Crop Rotation", "Organized Building" };
+                for (var i = 0; i < researchButtons.Length; i++)
+                {
+                    researchButtons[i].interactable = !flags[i] && (i == 0 || research.StoneToolsUnlocked);
+                    if (flags[i]) researchButtons[i].GetComponentInChildren<Text>().text = labels[i] + " · COMPLETE";
+                }
+            }
+
+            if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
             {
                 var season = seasonDirector.ActiveSeason;
                 var eventLine = string.Empty;
