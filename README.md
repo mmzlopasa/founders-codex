@@ -4,7 +4,7 @@ An iOS civilization-building game told through seasonal eras and live events.
 
 ## Status
 
-This repository was empty when project work began. The initial baseline is being established in `docs/GAME_PLAN.md`.
+The project baseline and first playable systems are being built from the plan in `docs/GAME_PLAN.md`.
 
 ## First season: Prehistoric Civilization
 
@@ -19,6 +19,19 @@ The player can build anywhere on the map. A building clears vegetation and natur
 - The target is iOS. The deliverable is a signed `.ipa` published in GitHub Releases when signing and build infrastructure are configured.
 - Large source assets and Unity-generated caches must be handled separately from release binaries; do not commit generated caches.
 
-## Development baseline
+## Current implementation
 
-See [docs/GAME_PLAN.md](docs/GAME_PLAN.md) for gameplay, map, asset integration, seasons, technical approach, and staged deliverables.
+- A deterministic 64 × 64 chunk world (16.384 km square) with runtime terrain and nearby nature streaming.
+- Free building placement on terrain, with trees and rocks removed under the building footprint.
+- Tap vegetation and rocks to gather food, wood, and stone.
+- Local device saves for buildings, gathered resources, cleared natural props, season clock, and event progress.
+- A Unity Editor generator that scans imported assets, builds the prehistoric catalog, and creates the starter scene.
+- A manual GitHub Actions workflow for remote iOS Xcode project export.
+
+## Pending before an asset-complete IPA
+
+- Make the two licensed Asset Store packages available to the remote Unity build without publishing their binaries in this public repo.
+- Add Unity build and Apple signing secrets in GitHub Actions.
+- Run and fix the first remote Unity build, then export and sign the Feather-installable IPA.
+
+See [docs/GAME_PLAN.md](docs/GAME_PLAN.md) for the design and [docs/REMOTE_BUILD.md](docs/REMOTE_BUILD.md) for remote build setup. The current repository has not yet been built in Unity; generated scene and catalog content depend on the package import step.
