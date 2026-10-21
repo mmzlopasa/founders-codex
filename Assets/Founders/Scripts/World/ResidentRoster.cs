@@ -249,6 +249,9 @@ namespace Founders.World
                     break;
             }
 
+            var research = SettlementResearch.Instance;
+            if (research != null && (resident.job == ResidentJob.Farmer || resident.job == ResidentJob.Rancher))
+                food = Mathf.RoundToInt(food * research.FarmYieldMultiplier);
             if (data.farmingBoostDaysRemaining > 0 &&
                 (resident.job == ResidentJob.Farmer || resident.job == ResidentJob.Rancher))
                 food *= 2;
