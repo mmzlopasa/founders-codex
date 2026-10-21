@@ -91,7 +91,14 @@ namespace Founders.World
 
         private void HandlePointer()
         {
-            if (Input.touchCount > 0)
+            if (Input.touchCount > 1)
+            {
+                pointerDown = false;
+                dragged = true;
+                return;
+            }
+
+            if (Input.touchCount == 1)
             {
                 var touch = Input.GetTouch(0);
                 if (touch.phase == TouchPhase.Began)
