@@ -47,8 +47,8 @@ Use the imported humanoid rigs and animation clips after the packages are invent
 
 - Landscape iPhone/iPad layout, safe-area-aware and touch-first controls.
 - Original app icon and loading screen using the Adventure UI Kit and game branding.
-- Remote Unity build and Xcode archive on macOS; signed ad hoc IPA artifact for Feather installation.
-- Keep certificates, provisioning profiles, Unity credentials, and licensed package binaries out of the public Git repository.
+- Remote Unity/Xcode build on macOS; publish an unsigned IPA to GitHub Releases for Feather to sign on-device with the user's certificate/profile.
+- Keep certificates, provisioning profiles, Unity credentials, and licensed package binaries out of the public Git repository. Unity credentials belong in GitHub Actions secrets; Feather signing credentials stay inside Feather.
 
 ## Current code checkpoint
 
