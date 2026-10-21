@@ -8,7 +8,7 @@ namespace Founders.World
         [Header("World scale")]
         [Min(1)] public int chunksPerSide = 64;
         [Min(32f)] public float chunkSizeMeters = 256f;
-        [Range(33, 513)] public int heightmapResolution = 129;
+        [Min(33)] public int heightmapResolution = 129;
         [Min(1)] public int visibleChunkRadius = 1;
 
         [Header("Terrain")]
@@ -27,6 +27,12 @@ namespace Founders.World
 
         public float WorldSizeMeters => chunksPerSide * chunkSizeMeters;
         public float WorldOrigin => -WorldSizeMeters * 0.5f;
+
+        private void OnValidate()
+        {
+            var baseResolution = Mathf.Clamp(heightmapResolution - 1, 32, 512);
+            heightmapResolution = Mathf.ClosestPowerOfTwo(baseResolution) + 1;
+        }
 
         public bool ContainsChunk(int x, int z)
         {
