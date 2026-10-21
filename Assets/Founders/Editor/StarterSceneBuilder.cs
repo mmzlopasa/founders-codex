@@ -21,7 +21,7 @@ namespace Founders.EditorTools
         private const string SeasonPath = GeneratedFolder + "/PrehistoricSeason.asset";
 
         [MenuItem("Founders/World/Create Prehistoric Starter Scene")]
-        private static void CreateScene()
+        public static void CreateScene()
         {
             Directory.CreateDirectory(SceneFolder);
             Directory.CreateDirectory(GeneratedFolder);
