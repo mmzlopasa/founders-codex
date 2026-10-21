@@ -107,7 +107,7 @@ namespace Founders.World
             };
 
             BuildHeights(data, coordinate);
-            ApplyTerrainLayers(data);
+            ApplyTerrainLayers(data, coordinate);
 
             var terrainObject = Terrain.CreateTerrainGameObject(data);
             terrainObject.name = "World Chunk " + coordinate.x + "," + coordinate.y;
@@ -173,7 +173,7 @@ namespace Founders.World
             return Mathf.Lerp(settings.shorelineHeight, Mathf.Clamp01(land), edgeBlend);
         }
 
-        private void ApplyTerrainLayers(TerrainData data)
+        private void ApplyTerrainLayers(TerrainData data, Vector2Int coordinate)
         {
             if (assetCatalog == null || assetCatalog.terrainLayers == null || assetCatalog.terrainLayers.Length == 0)
                 return;
@@ -194,11 +194,9 @@ namespace Founders.World
                     var v = z / (resolution - 1f);
                     var worldX = data.size.x * u;
                     var worldZ = data.size.z * v;
-                    var globalX = worldX;
-                    var globalZ = worldZ;
-                    var height = SampleHeight(
-                        globalX + transform.position.x,
-                        globalZ + transform.position.z);
+                    var globalX = coordinate.x * settings.chunkSizeMeters + worldX;
+                    var globalZ = coordinate.y * settings.chunkSizeMeters + worldZ;
+                    var height = SampleHeight(globalX, globalZ);
 
                     var moisture = Mathf.PerlinNoise(
                         (globalX + settings.worldSeed) / 420f,
@@ -221,6 +219,7 @@ namespace Founders.World
                         alpha[z, x, 0] = dry;
                         alpha[z, x, 1] = wet;
                         alpha[z, x, 2] = rock;
+                        NormalizeWeights(alpha, z, x, layerCount);
                     }
                     else
                     {
