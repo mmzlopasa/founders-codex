@@ -31,7 +31,7 @@ namespace Founders.EditorTools
         private static readonly string[] BuildingTokens =
         {
             "hut", "house", "tent", "camp", "shrine", "tower", "bridge", "building", "structure",
-            "gate", "wall", "shelter", "village"
+            "gate", "wall", "shelter"
         };
         private static readonly string[] CharacterTokens =
         {
@@ -66,7 +66,8 @@ namespace Founders.EditorTools
                     continue;
 
                 environment.Add(prefab);
-                var searchable = (Path.GetFileNameWithoutExtension(path) + " " + path).ToLowerInvariant();
+                var parentFolder = Path.GetFileName(Path.GetDirectoryName(path));
+                var searchable = (Path.GetFileNameWithoutExtension(path) + " " + parentFolder).ToLowerInvariant();
 
                 if (ContainsAny(searchable, VegetationTokens))
                     vegetation.Add(prefab);
@@ -88,6 +89,14 @@ namespace Founders.EditorTools
                 .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
                 .Select(AssetDatabase.LoadAssetAtPath<TerrainLayer>)
                 .Where(layer => layer != null)
+                .ToArray();
+
+            var interfaceSprites = AssetDatabase.FindAssets("t:Sprite", new[] { "Assets" })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Select(path => AssetDatabase.LoadAssetAtPath<Sprite>(path))
+                .Where(sprite => sprite != null)
+                .OrderBy(sprite => sprite.name, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             var skyMaterials = AssetDatabase.FindAssets("t:Material", new[] { "Assets" })
@@ -115,6 +124,7 @@ namespace Founders.EditorTools
             catalog.terrainLayers = terrainLayers;
             catalog.environmentPrefabs = environment.Distinct().ToArray();
             catalog.skyMaterials = skyMaterials.Distinct().ToArray();
+            catalog.interfaceSprites = interfaceSprites;
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
 
@@ -129,6 +139,7 @@ namespace Founders.EditorTools
                 ", effects: " + effects.Count +
                 ", terrain layers: " + terrainLayers.Length +
                 ", sky materials: " + skyMaterials.Length +
+                ", interface sprites: " + interfaceSprites.Length +
                 ". Review the catalog before building a scene.");
             Selection.activeObject = catalog;
         }
