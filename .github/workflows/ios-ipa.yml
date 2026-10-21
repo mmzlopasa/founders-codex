@@ -2,9 +2,15 @@ name: Build signed iOS IPA
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish the signed IPA as a GitHub Release asset"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-and-sign:
@@ -151,6 +157,15 @@ jobs:
           path: Build/Release/Founders-The-Long-Rise.ipa
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish IPA to GitHub Releases
+        if: ${{ inputs.publish_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Founders The Long Rise v0.1.${{ github.run_number }}
+          prerelease: true
+          files: Build/Release/Founders-The-Long-Rise.ipa
 
       - name: Upload Xcode project for diagnostics
         if: always()
