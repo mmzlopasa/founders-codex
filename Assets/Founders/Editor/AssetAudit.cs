@@ -68,6 +68,10 @@ namespace Founders.EditorTools
             AddAssets(report, "Material", "t:Material");
             AddAssets(report, "Texture", "t:Texture2D");
             AddAssets(report, "TerrainLayer", "t:TerrainLayer");
+            report.entries = report.entries
+                .OrderBy(entry => entry.path, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.kind, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             Directory.CreateDirectory(OutputFolder);
             File.WriteAllText(OutputFile, JsonUtility.ToJson(report, true));
@@ -92,7 +96,7 @@ namespace Founders.EditorTools
                 report.entries.Add(new AssetAuditEntry
                 {
                     kind = kind,
-                    category = Categorize(name),
+                    category = Categorize(name + " " + path),
                     name = name,
                     path = path
                 });
