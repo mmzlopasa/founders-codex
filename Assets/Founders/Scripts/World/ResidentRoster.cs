@@ -139,6 +139,23 @@ namespace Founders.World
             Save();
         }
 
+        public void FormFirstAvailableHousehold()
+        {
+            for (var i = 0; i < data.residents.Count; i++)
+            {
+                if (!IsAdult(data.residents[i]) || IsInHousehold(data.residents[i].id))
+                    continue;
+
+                for (var j = i + 1; j < data.residents.Count; j++)
+                {
+                    if (!IsAdult(data.residents[j]) || IsInHousehold(data.residents[j].id))
+                        continue;
+                    FormHousehold(data.residents[i].id, data.residents[j].id);
+                    return;
+                }
+            }
+        }
+
         public void FormHousehold(string adultAId, string adultBId)
         {
             if (adultAId == adultBId || FindHousehold(adultAId, adultBId) != null)
