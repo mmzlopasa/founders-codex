@@ -21,6 +21,8 @@ namespace Founders.World
         public TerrainLayer[] terrainLayers;
         [Tooltip("All discovered environment prefabs, including unclassified items.")]
         public GameObject[] environmentPrefabs;
+        [Tooltip("Sprite assets available for the Adventure UI Kit and game interface.")]
+        public Sprite[] interfaceSprites;
         [Tooltip("Skybox and environment materials found in the imported packs.")]
         public Material[] skyMaterials;
     }
