@@ -87,6 +87,7 @@ namespace Founders.World
         private sealed class RosterData
         {
             public long gameDay;
+            public int farmingBoostDaysRemaining;
             public int nextResidentNumber = 5;
             public List<ResidentRecord> residents = new List<ResidentRecord>();
             public List<ResidentHousehold> households = new List<ResidentHousehold>();
@@ -95,6 +96,7 @@ namespace Founders.World
         private RosterData data = new RosterData();
         private float dayTimer;
         private Vector2 rosterScroll;
+        private string selectedForHousehold = string.Empty;
 
         public IReadOnlyList<ResidentRecord> Residents => data.residents;
         public long GameDay => data.gameDay;
@@ -124,6 +126,16 @@ namespace Founders.World
 
             var next = ((int)resident.job + 1) % Enum.GetValues(typeof(ResidentJob)).Length;
             resident.job = (ResidentJob)next;
+            Save();
+        }
+
+        public void UseFarmingSpeedup()
+        {
+            var save = WorldSaveSystem.Instance;
+            if (save == null || !save.TrySpendFarmingSpeedup())
+                return;
+
+            data.farmingBoostDaysRemaining = Mathf.Max(data.farmingBoostDaysRemaining, 5);
             Save();
         }
 
@@ -158,6 +170,9 @@ namespace Founders.World
                     WorkOneDay(resident);
             }
 
+            if (data.farmingBoostDaysRemaining > 0)
+                data.farmingBoostDaysRemaining--;
+
             if (data.gameDay % 30 == 0)
                 GrowHouseholds();
 
@@ -189,6 +204,10 @@ namespace Founders.World
                     food = 2 + skillBonus;
                     break;
             }
+
+            if (data.farmingBoostDaysRemaining > 0 &&
+                (resident.job == ResidentJob.Farmer || resident.job == ResidentJob.Rancher))
+                food *= 2;
 
             if (food + wood + stone > 0)
             {
@@ -306,7 +325,7 @@ namespace Founders.World
 
         private static bool IsAdult(ResidentRecord resident)
         {
-            return resident != null && resident.LifeStage != ResidentLifeStage.Child;
+            return resident != null && resident.LifeStage == ResidentLifeStage.Adult;
         }
 
         private void CreateStartingPopulation()
@@ -371,9 +390,13 @@ namespace Founders.World
             if (!showRoster)
                 return;
 
-            GUILayout.BeginArea(new Rect(20f, 18f, 340f, 330f), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(20f, 18f, 380f, 385f), GUI.skin.box);
             GUILayout.Label("SETTLEMENT · DAY " + data.gameDay);
             GUILayout.Label("Residents " + data.residents.Count + " · Households " + data.households.Count);
+            var speedups = WorldSaveSystem.Instance != null ? WorldSaveSystem.Instance.FarmingSpeedups : 0;
+            if (GUILayout.Button("Farm boost · " + speedups + " available · " + data.farmingBoostDaysRemaining + " days active"))
+                UseFarmingSpeedup();
+            GUILayout.Label("Assign jobs with the job button. Pair two adults to form a household.");
 
             rosterScroll = GUILayout.BeginScrollView(rosterScroll);
             foreach (var resident in data.residents)
@@ -387,6 +410,20 @@ namespace Founders.World
                 else if (GUILayout.Button(resident.job + " Lv." + resident.jobLevel, GUILayout.Width(145f)))
                 {
                     CycleJob(resident.id);
+                }
+
+                if (resident.LifeStage == ResidentLifeStage.Adult && !IsInHousehold(resident.id))
+                {
+                    if (GUILayout.Button("Pair", GUILayout.Width(48f)))
+                    {
+                        if (string.IsNullOrEmpty(selectedForHousehold))
+                            selectedForHousehold = resident.id;
+                        else
+                        {
+                            FormHousehold(selectedForHousehold, resident.id);
+                            selectedForHousehold = string.Empty;
+                        }
+                    }
                 }
                 GUILayout.EndHorizontal();
             }
