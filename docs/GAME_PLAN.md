@@ -85,9 +85,9 @@ Izvorne assete ne prepakirati ili objaviti bez pregleda licence i konfiguracije 
 4. **Gradnja:** katalog građevina, preview, rotacija, slobodno postavljanje, čišćenje stabala/kamenja i spremanje.
 5. **Season 1 MVP:** osnovni resursi, naseljenici, građevine, zadaci i jedan event.
 6. **Sadržaj i dorada:** likovi i animacije, više građevina i okolišnih detalja, UI, zvuk, tutorial i optimizacija.
-7. **iOS release:** izgraditi i potpisati `.ipa` u kontroliranom iOS build procesu, provjeriti instalaciju preko Feather te objaviti datoteku u GitHub Releaseu.
+7. **iOS release:** Unity i Xcode udaljeno izrađuju nepotpisani `.ipa`, objavljuju ga u GitHub Releaseu, a korisnik ga uvozi i potpisuje unutar Feather aplikacije s valjanim Apple certifikatom i provisioning profilom.
 
-Za potpisani iOS build bit će potrebna Apple potpisna konfiguracija. Release se ne smatra gotovim dok `.ipa` nije stvarno izgrađen, potpisan i postavljen u GitHub Releases.
+Za udaljeni Unity build potrebne su GitHub Actions tajne s Unity licencom i prijavom. Apple certifikat i provisioning profil ostaju u Featheru, ne spremaju se u javni repozitorij. Release se ne smatra gotovim dok `.ipa` nije stvarno izgrađen i objavljen.
 
 ## 8. Otvorene tehničke odluke
 
