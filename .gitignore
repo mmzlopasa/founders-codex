@@ -37,3 +37,6 @@ desktop.ini
 *.aab
 *.apk
 *.unitypackage
+
+# Licensed Unity Asset Store source is supplied from the private asset repository
+Assets/StoreAssets/
