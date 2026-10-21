@@ -122,6 +122,9 @@ namespace Founders.World
 
         private void BeginPointer(Vector2 position)
         {
+            if (IsOverToolbar(position))
+                return;
+
             pressPosition = position;
             pointerDown = true;
             dragged = false;
@@ -231,6 +234,38 @@ namespace Founders.World
                 Quaternion.Euler(0f, rotationY, 0f));
 
             CreatePreview();
+        }
+
+        private bool IsOverToolbar(Vector2 screenPosition)
+        {
+            var guiY = Screen.height - screenPosition.y;
+            var toolbar = new Rect(20f, Screen.height - 150f, 360f, 130f);
+            return toolbar.Contains(new Vector2(screenPosition.x, guiY));
+        }
+
+        private void OnGUI()
+        {
+            if (buildings.Count == 0)
+                return;
+
+            GUILayout.BeginArea(new Rect(20f, Screen.height - 150f, 360f, 130f), GUI.skin.box);
+            GUILayout.Label("PREHISTORIC BUILDING");
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("‹", GUILayout.Width(56f), GUILayout.Height(54f)))
+                SelectPreviousBuilding();
+
+            GUILayout.BeginVertical();
+            GUILayout.Label(buildings[selectedIndex].name, GUILayout.Height(24f));
+            if (GUILayout.Button("Rotate 90°", GUILayout.Height(26f)))
+                RotateBuilding();
+            GUILayout.EndVertical();
+
+            if (GUILayout.Button("›", GUILayout.Width(56f), GUILayout.Height(54f)))
+                SelectNextBuilding();
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
         }
 
         private void ClearNaturalProps()
