@@ -77,7 +77,7 @@ namespace Founders.EditorTools
             serializedProgression.FindProperty("showHud").boolValue = false;
             serializedProgression.ApplyModifiedPropertiesWithoutUndo();
 
-            var residents = world.AddComponent<ResidentRoster>();
+            var research = world.AddComponent<SettlementResearch>();\n\n            var residents = world.AddComponent<ResidentRoster>();
             var serializedResidents = new SerializedObject(residents);
             serializedResidents.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
             serializedResidents.FindProperty("showRoster").boolValue = false;
@@ -96,7 +96,7 @@ namespace Founders.EditorTools
             serializedUi.FindProperty("assetCatalog").objectReferenceValue = catalog;
             serializedUi.FindProperty("buildingPlacement").objectReferenceValue = placer;
             serializedUi.FindProperty("progression").objectReferenceValue = progression;
-            serializedUi.FindProperty("residents").objectReferenceValue = residents;
+            serializedUi.FindProperty("residents").objectReferenceValue = residents;\n            serializedUi.FindProperty("research").objectReferenceValue = research;
             serializedUi.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
             serializedUi.ApplyModifiedPropertiesWithoutUndo();
 
