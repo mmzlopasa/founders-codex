@@ -1,49 +1,67 @@
-# Remote build and asset access
+# Remote build, Unity license, and Feather
 
-This project is kept in GitHub. Unity imports and builds are intended to run on a remote macOS GitHub Actions runner. No game project or Asset Store package needs to be stored on the user's computer.
+The project stays in GitHub. Unity and Xcode build on a remote macOS GitHub Actions runner. No game project or Asset Store package needs to be stored on the user's computer. The workflow creates an **unsigned** IPA and publishes it to GitHub Releases by default. Feather signs that IPA on the iPhone/iPad using a certificate configured inside Feather.
 
-## Signed iOS IPA
+## 1. Add Unity build credentials to GitHub
 
-Run **Actions → Build signed iOS IPA → Run workflow** after adding the Actions secrets listed below. The workflow creates the starter scene, generated app icon, and loading-screen background in the remote Unity Editor, exports the Xcode project, signs an ad hoc build, and uploads the `.ipa` as a temporary GitHub Actions artifact.
+Open the repository settings:
 
-The optional `publish_release` checkbox creates a GitHub prerelease and attaches the IPA. Review a successful build before publishing it. An ad hoc profile must include the UDID of each device that should install the IPA through Feather.
+**[Repository Settings → Secrets and variables → Actions](https://github.com/mmzlopasa/founders-codex/settings/secrets/actions)**
 
-For Unity/Xcode diagnostics without signing, run **Actions → Export iOS Xcode project → Run workflow** instead.
+Choose **New repository secret**. Add secrets according to the Unity plan on the account:
 
-## Unity build secrets
+### Unity Personal
 
-Add these repository Actions secrets:
+In Unity Hub, sign in to the Unity account that owns the project assets. Open **Preferences → Licenses → Add → Get a free personal license** and complete activation. GameCI uses the resulting license file. On Windows its default path is:
 
-- `UNITY_LICENSE` — Unity license file contents
+`C:\ProgramData\Unity\Unity_lic.ulf`
+
+Open the `.ulf` file, copy its entire contents into the GitHub secret named `UNITY_LICENSE`, then also add:
+
 - `UNITY_EMAIL` — Unity account email
 - `UNITY_PASSWORD` — Unity account password
 
-Store secret values only in GitHub Actions Secrets. Do not put them in the repository or chat. GameCI documents Personal and Professional Unity license setup in its [activation guide](https://game.ci/docs/github/activation/).
+### Unity Plus/Pro
 
-## Apple ad hoc signing secrets
+Add these three secrets instead:
 
-Add these additional repository Actions secrets:
+- `UNITY_SERIAL` — serial from the Unity account subscription page
+- `UNITY_EMAIL` — Unity account email
+- `UNITY_PASSWORD` — Unity account password
 
-- `APPLE_CERTIFICATE_BASE64` — base64-encoded Apple Distribution `.p12` certificate
-- `APPLE_CERTIFICATE_PASSWORD` — password for that certificate
-- `APPLE_PROVISIONING_PROFILE_BASE64` — base64-encoded ad hoc `.mobileprovision` profile that includes the target device UDID
-- `APPLE_TEAM_ID` — Apple Developer Team ID
+Do not add the activation request `.alf` file; the Personal workflow needs the completed `.ulf` license file. Do not send credentials or license contents in chat, commit them, or put them in normal GitHub variables. GitHub Actions secrets are write-only after saving.
 
-The app bundle ID is `com.mmzlopasa.founderslongrise`. Apple requires an App ID, a distribution certificate, and registered devices for an ad hoc provisioning profile. See [Apple's ad hoc profile instructions](https://developer.apple.com/help/account/provisioning-profiles/create-an-ad-hoc-provisioning-profile/).
+## 2. Build and publish the unsigned IPA
+
+After the Unity secrets are saved:
+
+1. Open the repository’s **Actions** tab.
+2. Choose **Build unsigned iOS IPA**.
+3. Click **Run workflow**. Leave **Publish the unsigned IPA to GitHub Releases for import into Feather** enabled.
+4. When the run succeeds, open **Releases** and download `Founders-The-Long-Rise-unsigned.ipa`.
+
+The same IPA is available as a workflow artifact for 14 days. The Unity build and Xcode packaging run remotely; there is no Apple certificate or provisioning-profile secret in GitHub.
+
+## 3. Sign and install through Feather
+
+Feather does not make an unsigned IPA installable without signing. The app needs a valid signing certificate/profile pair that supports your iPhone or iPad. Feather’s documentation describes importing an IPA and signing it with the selected certificate.
+
+1. In Feather, import the downloaded unsigned IPA into the app library.
+2. In Feather’s certificate/signing settings, import the certificate `.p12` and its password, plus the matching `.mobileprovision` profile.
+3. Select **Sign** for Founders, then install the signed app.
+4. Keep the certificate and profile in Feather; do not upload them to this public repository or GitHub Actions.
+
+If the profile is Ad Hoc, it must include the target device UDID. Certificate/profile provisioning is handled by the Apple signing provider/account you use with Feather, not by this project workflow.
 
 ## Asset Store packages
 
-Adding an asset to a Unity account grants entitlement; it does not put package files in this GitHub checkout. The Editor catalog scans imported prefabs, terrain layers, materials, and UI sprites.
+Adding an asset to a Unity account grants entitlement; it does not put package files in this GitHub checkout or make them available to a remote runner. The public repository must not contain licensed package binaries. The Editor catalog scans imported prefabs, terrain layers, materials, and UI sprites.
 
-The source repository is public, so do not commit or publish Asset Store package files here. Make the licensed packages available to the remote builder through a permitted private import or storage path before expecting their visuals in the game. Until then, the world catalog creates blockout prehistoric structures and the interface uses its fallback skin.
-
-Required packages:
+The remote Unity build still needs a permitted private asset-import/storage route for the required packages. Until then, it creates blockout prehistoric structures and uses the HUD fallback skin:
 
 - [Ultimate Nature – Starter](https://assetstore.unity.com/packages/3d/environments/landscapes/ultimate-nature-starter-176906)
 - [EXPLORER – Stone Age](https://assetstore.unity.com/packages/3d/environments/historic/explorer-stone-age-150867)
 - [Adventure UI Kit](https://assetstore.unity.com/packages/2d/gui/adventure-ui-kit-376222)
 - [Viking Village | 3D Sample Project](https://assetstore.unity.com/packages/3d/environments/viking-village-3d-sample-project-29140)
 
-## Release handling
-
-The signed workflow retains an IPA artifact for 14 days. If `publish_release` is selected, it creates a GitHub prerelease with the IPA attached. Keep licensed Unity package binaries out of this public repository.
+The first successful build will reveal any remaining Unity/Xcode project issues. The repository has not yet produced an IPA.
