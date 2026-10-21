@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Founders.Seasons;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Founders.World
 {
@@ -18,6 +19,7 @@ namespace Founders.World
         [SerializeField] private bool clearVegetation = true;
         [SerializeField] private bool clearRocks = true;
         [SerializeField] private float rayDistance = 2400f;
+        [SerializeField] private bool showHud = true;
 
         private readonly List<GameObject> buildings = new List<GameObject>();
         private readonly List<Renderer> previewRenderers = new List<Renderer>();
@@ -154,7 +156,7 @@ namespace Founders.World
             {
                 var touch = Input.GetTouch(0);
                 if (touch.phase == TouchPhase.Began)
-                    BeginPointer(touch.position);
+                    BeginPointer(touch.position, touch.fingerId);
                 else if (touch.phase == TouchPhase.Moved)
                     MovePointer(touch.position);
                 else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
@@ -179,9 +181,10 @@ namespace Founders.World
 #endif
         }
 
-        private void BeginPointer(Vector2 position)
+        private void BeginPointer(Vector2 position, int pointerId = -1)
         {
-            if (IsOverToolbar(position))
+            if (IsOverToolbar(position) ||
+                (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(pointerId)))
                 return;
 
             pressPosition = position;
@@ -376,7 +379,7 @@ namespace Founders.World
 
         private void OnGUI()
         {
-            if (buildings.Count == 0)
+            if (!showHud || buildings.Count == 0)
                 return;
 
             GUILayout.BeginArea(new Rect(20f, Screen.height - 150f, 360f, 130f), GUI.skin.box);
