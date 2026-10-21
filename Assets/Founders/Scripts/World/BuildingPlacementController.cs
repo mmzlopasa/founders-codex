@@ -326,7 +326,7 @@ namespace Founders.World
         private bool IsOverToolbar(Vector2 screenPosition)
         {
             var guiY = Screen.height - screenPosition.y;
-            var toolbar = new Rect(20f, Screen.height - 150f, 360f, 130f);
+            var toolbar = new Rect(20f, Screen.height - 176f, 360f, 156f);
             return toolbar.Contains(new Vector2(screenPosition.x, guiY));
         }
 
@@ -337,6 +337,7 @@ namespace Founders.World
 
             GUILayout.BeginArea(new Rect(20f, Screen.height - 150f, 360f, 130f), GUI.skin.box);
             GUILayout.Label("PREHISTORIC BUILDING");
+            GUILayout.Label("Tap a tree or rock to gather. Tap open land to build.");
             var save = WorldSaveSystem.Instance;
             if (save != null)
                 GUILayout.Label("Food " + save.Food + "   Wood " + save.Wood + "   Stone " + save.Stone);
