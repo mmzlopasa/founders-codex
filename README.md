@@ -2,13 +2,15 @@
 
 An iOS civilization-building game told through seasonal eras and live events.
 
+**Developer:** SCYDE · [scyde.dev](https://scyde.dev)
+
 ## Status
 
 The project baseline and first playable systems are being built from the plan in `docs/GAME_PLAN.md`.
 
 ## First season: Prehistoric Civilization
 
-The first season focuses on founding a settlement, gathering resources, building a village, and expanding across a broad natural landscape. The world uses land and vegetation from [Ultimate Nature – Starter](https://assetstore.unity.com/packages/3d/environments/landscapes/ultimate-nature-starter-176906) and prehistoric people, buildings, props, and animation direction from [EXPLORER – Stone Age](https://assetstore.unity.com/packages/3d/environments/historic/explorer-stone-age-150867).
+The first season focuses on founding a settlement, gathering resources, building a village, and expanding across a broad natural landscape. The world uses land and vegetation from [Ultimate Nature – Starter](https://assetstore.unity.com/packages/3d/environments/landscapes/ultimate-nature-starter-176906), prehistoric people and props from [EXPLORER – Stone Age](https://assetstore.unity.com/packages/3d/environments/historic/explorer-stone-age-150867), settlement structures from [Viking Village](https://assetstore.unity.com/packages/3d/environments/viking-village-3d-sample-project-29140), and HUD art from [Adventure UI Kit](https://assetstore.unity.com/packages/2d/gui/adventure-ui-kit-376222).
 
 The player can build anywhere on the map. A building clears vegetation and natural props under its footprint, including trees and rocks, then leaves the building in place. Tapping vegetation gathers food and wood; tapping rocks gathers stone. Buildings, cleared props, gathered resources, seasonal progress, and the season clock persist on the device.
 
