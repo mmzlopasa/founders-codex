@@ -27,7 +27,7 @@ namespace Founders.EditorTools
         };
 
         [MenuItem("Founders/World/Build Asset Catalog")]
-        private static void BuildCatalog()
+        internal static void BuildCatalog()
         {
             EnsureGeneratedFolder();
 
@@ -87,7 +87,7 @@ namespace Founders.EditorTools
         }
 
         [MenuItem("Founders/World/Create Default Generation Settings")]
-        private static void CreateSettings()
+        internal static void CreateSettings()
         {
             EnsureGeneratedFolder();
 
