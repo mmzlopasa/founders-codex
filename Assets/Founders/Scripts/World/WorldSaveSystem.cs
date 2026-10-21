@@ -100,7 +100,20 @@ namespace Founders.World
             return true;
         }
 
-        public void AddSeasonPoints(int amount)\n        {\n            data.seasonPoints += Mathf.Max(0, amount);\n            Save();\n        }\n\n        public void AddSpeedups(int construction, int farming)\n        {\n            data.constructionSpeedups += Mathf.Max(0, construction);\n            data.farmingSpeedups += Mathf.Max(0, farming);\n            Save();\n        }\n\n        public bool TrySpendFarmingSpeedup()
+        public void AddSeasonPoints(int amount)
+        {
+            data.seasonPoints += Mathf.Max(0, amount);
+            Save();
+        }
+
+        public void AddSpeedups(int construction, int farming)
+        {
+            data.constructionSpeedups += Mathf.Max(0, construction);
+            data.farmingSpeedups += Mathf.Max(0, farming);
+            Save();
+        }
+
+        public bool TrySpendFarmingSpeedup()
         {
             if (data.farmingSpeedups <= 0)
                 return false;
