@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Founders.Seasons;
 using UnityEngine;
 
 namespace Founders.World
@@ -10,6 +11,7 @@ namespace Founders.World
     public sealed class BuildingPlacementController : MonoBehaviour
     {
         [SerializeField] private WorldAssetCatalog assetCatalog;
+        [SerializeField] private SeasonDirector seasonDirector;
         [SerializeField] private Camera mapCamera;
         [SerializeField, Min(1f)] private float footprintWidth = 12f;
         [SerializeField, Min(1f)] private float footprintDepth = 10f;
@@ -239,6 +241,9 @@ namespace Founders.World
                 buildings[selectedIndex],
                 placePosition,
                 Quaternion.Euler(0f, rotationY, 0f));
+
+            if (seasonDirector != null)
+                seasonDirector.ReportProgress(SeasonObjective.PlaceBuildings);
 
             CreatePreview();
         }
