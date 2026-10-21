@@ -149,7 +149,8 @@ namespace Founders.World
                 position = position,
                 eulerAngles = rotation.eulerAngles,
                 secondsRemaining = GetBuildTime(prefab.name) *
-                    (ResidentRoster.Instance != null ? ResidentRoster.Instance.ConstructionSpeedMultiplier : 1f) *\n                    (SettlementResearch.Instance != null ? SettlementResearch.Instance.ConstructionMultiplier : 1f)
+                    (ResidentRoster.Instance != null ? ResidentRoster.Instance.ConstructionSpeedMultiplier : 1f) *
+                    (SettlementResearch.Instance != null ? SettlementResearch.Instance.ConstructionMultiplier : 1f)
             });
             message = "Construction started: " + prefab.name + ".";
             Save();
