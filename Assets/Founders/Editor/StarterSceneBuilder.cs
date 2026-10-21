@@ -79,6 +79,8 @@ namespace Founders.EditorTools
             }
 
             RenderSettings.ambientLight = new Color(0.58f, 0.62f, 0.59f);
+            if (catalog != null && catalog.skyMaterials != null && catalog.skyMaterials.Length > 0)
+                RenderSettings.skybox = catalog.skyMaterials[0];
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
