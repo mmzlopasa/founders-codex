@@ -32,6 +32,10 @@ namespace Founders.World
         private bool canPlace;
         private Vector3 placePosition;
 
+        public string SelectedBuildingName => buildings.Count == 0
+            ? "No buildings available"
+            : buildings[Mathf.Clamp(selectedIndex, 0, buildings.Count - 1)].name;
+
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
 
