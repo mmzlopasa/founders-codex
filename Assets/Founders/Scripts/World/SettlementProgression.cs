@@ -42,6 +42,9 @@ namespace Founders.World
         public bool NeedsCampfire => !data.campfirePlaced;
         public int CampfireLevel => data.campfireLevel;
         public int QueuedBuildings => data.orders.Count;
+        public string StatusMessage => message;
+        public string ActiveConstructionName => data.orders.Count > 0 ? data.orders[0].prefabName : string.Empty;
+        public float ActiveConstructionRemaining => data.orders.Count > 0 ? data.orders[0].secondsRemaining : 0f;
 
         private void Awake()
         {
