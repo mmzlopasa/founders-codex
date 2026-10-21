@@ -1,0 +1,384 @@
+using System.Collections;
+using Founders.Seasons;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+namespace Founders.World
+{
+    /// <summary>
+    /// Touch-first settlement interface. Uses imported Adventure UI Kit sprites
+    /// when present and legible color panels as a temporary import fallback.
+    /// </summary>
+    public sealed class FoundersGameUI : MonoBehaviour
+    {
+        [SerializeField] private WorldAssetCatalog assetCatalog;
+        [SerializeField] private BuildingPlacementController buildingPlacement;
+        [SerializeField] private SettlementProgression progression;
+        [SerializeField] private ResidentRoster residents;
+        [SerializeField] private SeasonDirector seasonDirector;
+
+        private Text resourcesText;
+        private Text settlementText;
+        private Text seasonText;
+        private Text loadingLabel;
+        private Text[] residentLines;
+        private Button[] residentJobButtons;
+        private Sprite panelSprite;
+        private Sprite buttonSprite;
+
+        private void Start()
+        {
+            panelSprite = FindSprite("panel", "window", "frame");
+            buttonSprite = FindSprite("button");
+            CreateEventSystem();
+            CreateInterface();
+            StartCoroutine(RefreshReadouts());
+            StartCoroutine(ShowLoadingIntro());
+        }
+
+        private Sprite FindSprite(params string[] tokens)
+        {
+            if (assetCatalog == null || assetCatalog.interfaceSprites == null)
+                return null;
+
+            foreach (var sprite in assetCatalog.interfaceSprites)
+            {
+                if (sprite == null)
+                    continue;
+
+                var name = sprite.name.ToLowerInvariant();
+                foreach (var token in tokens)
+                {
+                    if (name.Contains(token))
+                        return sprite;
+                }
+            }
+
+            return null;
+        }
+
+        private static void CreateEventSystem()
+        {
+            if (EventSystem.current != null)
+                return;
+
+            var eventSystem = new GameObject("EventSystem");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<StandaloneInputModule>();
+        }
+
+        private void CreateInterface()
+        {
+            var canvasObject = new GameObject("Founders Interface");
+            canvasObject.transform.SetParent(transform, false);
+            var canvas = canvasObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 20;
+
+            var scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            canvasObject.AddComponent<GraphicRaycaster>();
+
+            var root = canvasObject.GetComponent<RectTransform>();
+            root.anchorMin = Vector2.zero;
+            root.anchorMax = Vector2.one;
+            root.offsetMin = Vector2.zero;
+            root.offsetMax = Vector2.zero;
+
+            CreateResourcePanel(root);
+            CreateResidentsPanel(root);
+            CreateProgressionPanel(root);
+            CreateBuildingPanel(root);
+            CreateSeasonPanel(root);
+            CreateLoadingOverlay(root);
+        }
+
+        private void CreateResourcePanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Resource Bar", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, -18f), new Vector2(720f, 74f));
+            resourcesText = CreateLabel(panel.transform, "Resources", "Food 0     Wood 0     Stone 0",
+                new Vector2(20f, -10f), new Vector2(680f, 54f), 27, TextAnchor.MiddleCenter);
+        }
+
+        private void CreateResidentsPanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Residents Panel", Vector2.zero, Vector2.zero,
+                new Vector2(18f, 18f), new Vector2(430f, 380f), new Vector2(0f, 0f));
+            CreateLabel(panel.transform, "Residents Title", "SETTLEMENT · RESIDENTS",
+                new Vector2(18f, -14f), new Vector2(394f, 40f), 24, TextAnchor.MiddleLeft);
+
+            residentLines = new Text[4];
+            residentJobButtons = new Button[4];
+            for (var i = 0; i < residentLines.Length; i++)
+            {
+                var rowY = 66f + i * 52f;
+                residentLines[i] = CreateLabel(panel.transform, "Resident " + i, string.Empty,
+                    new Vector2(20f, -rowY), new Vector2(230f, 42f), 19, TextAnchor.MiddleLeft);
+                residentJobButtons[i] = CreateButton(panel.transform, "Job " + i, "Job",
+                    new Vector2(260f, -rowY), new Vector2(150f, 42f), () => CycleResidentJob(i));
+            }
+
+            CreateButton(panel.transform, "Farm Boost", "Farm boost",
+                new Vector2(18f, -292f), new Vector2(184f, 48f), () =>
+                {
+                    if (residents != null)
+                        residents.UseFarmingSpeedup();
+                });
+            CreateButton(panel.transform, "Pair Residents", "Pair adults",
+                new Vector2(210f, -292f), new Vector2(200f, 48f), () =>
+                {
+                    if (residents != null)
+                        residents.FormFirstAvailableHousehold();
+                });
+        }
+
+        private void CreateProgressionPanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Campfire Panel", Vector2.one, Vector2.one,
+                new Vector2(-18f, -110f), new Vector2(430f, 220f), Vector2.one);
+            settlementText = CreateLabel(panel.transform, "Settlement Status", "CAMPFIRE · LEVEL 1",
+                new Vector2(18f, -14f), new Vector2(394f, 58f), 23, TextAnchor.MiddleLeft);
+            CreateButton(panel.transform, "Upgrade Campfire", "Upgrade",
+                new Vector2(18f, -82f), new Vector2(184f, 50f), () =>
+                {
+                    if (progression != null)
+                        progression.TryUpgradeCampfire();
+                });
+            CreateButton(panel.transform, "Construction Speedup", "Speed up",
+                new Vector2(210f, -82f), new Vector2(200f, 50f), () =>
+                {
+                    if (progression != null)
+                        progression.TryUseConstructionSpeedup();
+                });
+        }
+
+        private void CreateBuildingPanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Building Panel", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(0f, 18f), new Vector2(620f, 112f));
+            CreateButton(panel.transform, "Previous Building", "‹",
+                new Vector2(16f, -20f), new Vector2(78f, 72f), () =>
+                {
+                    if (buildingPlacement != null)
+                        buildingPlacement.SelectPreviousBuilding();
+                });
+            CreateLabel(panel.transform, "Building Hint", "BUILD · GATHER · EXPAND",
+                new Vector2(108f, -18f), new Vector2(400f, 32f), 19, TextAnchor.MiddleCenter);
+            CreateButton(panel.transform, "Rotate Building", "Rotate",
+                new Vector2(150f, -57f), new Vector2(145f, 42f), () =>
+                {
+                    if (buildingPlacement != null)
+                        buildingPlacement.RotateBuilding();
+                });
+            CreateButton(panel.transform, "Next Building", "›",
+                new Vector2(526f, -20f), new Vector2(78f, 72f), () =>
+                {
+                    if (buildingPlacement != null)
+                        buildingPlacement.SelectNextBuilding();
+                });
+        }
+
+        private void CreateSeasonPanel(RectTransform root)
+        {
+            var panel = CreatePanel(root, "Season Panel", new Vector2(0f, 1f), new Vector2(0f, 1f),
+                new Vector2(470f, -18f), new Vector2(385f, 105f), new Vector2(0f, 1f));
+            seasonText = CreateLabel(panel.transform, "Season Status", "PREHISTORIC CIVILIZATION",
+                new Vector2(16f, -10f), new Vector2(353f, 84f), 20, TextAnchor.MiddleLeft);
+        }
+
+        private void CreateLoadingOverlay(RectTransform root)
+        {
+            var overlay = CreatePanel(root, "Loading Overlay", Vector2.zero, Vector2.one,
+                Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
+            var rect = overlay.GetComponent<RectTransform>();
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            overlay.GetComponent<Image>().color = new Color32(20, 30, 28, 245);
+
+            var card = CreatePanel(rect, "Loading Card", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(740f, 310f));
+            CreateLabel(card.transform, "Game Title", "FOUNDERS\nTHE LONG RISE",
+                new Vector2(30f, -44f), new Vector2(680f, 150f), 42, TextAnchor.MiddleCenter);
+            loadingLabel = CreateLabel(card.transform, "Loading Text", "PREPARING THE VALLEY",
+                new Vector2(30f, -206f), new Vector2(680f, 54f), 22, TextAnchor.MiddleCenter);
+            StartCoroutine(HideLoadingAfterDelay(overlay));
+        }
+
+        private IEnumerator HideLoadingAfterDelay(GameObject overlay)
+        {
+            yield return new WaitForSecondsRealtime(2f);
+            if (overlay != null)
+                overlay.SetActive(false);
+        }
+
+        private IEnumerator ShowLoadingIntro()
+        {
+            var dots = 0;
+            while (loadingLabel != null && loadingLabel.gameObject.activeInHierarchy)
+            {
+                dots = (dots + 1) % 4;
+                loadingLabel.text = "PREPARING THE VALLEY" + new string('.', dots);
+                yield return new WaitForSecondsRealtime(0.35f);
+            }
+        }
+
+        private GameObject CreatePanel(
+            RectTransform parent,
+            string objectName,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            Vector2? pivot = null)
+        {
+            var panel = new GameObject(objectName, typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(parent, false);
+            var rect = panel.GetComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.pivot = pivot ?? new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = size;
+
+            var image = panel.GetComponent<Image>();
+            image.sprite = panelSprite;
+            image.color = panelSprite == null ? new Color32(42, 35, 27, 225) : Color.white;
+            if (panelSprite != null && panelSprite.border.sqrMagnitude > 0f)
+                image.type = Image.Type.Sliced;
+            return panel;
+        }
+
+        private Button CreateButton(
+            Transform parent,
+            string objectName,
+            string label,
+            Vector2 topLeftPosition,
+            Vector2 size,
+            UnityEngine.Events.UnityAction action)
+        {
+            var buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+            var rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = topLeftPosition;
+            rect.sizeDelta = size;
+
+            var image = buttonObject.GetComponent<Image>();
+            image.sprite = buttonSprite;
+            image.color = buttonSprite == null ? new Color32(92, 112, 65, 255) : Color.white;
+            if (buttonSprite != null && buttonSprite.border.sqrMagnitude > 0f)
+                image.type = Image.Type.Sliced;
+
+            var button = buttonObject.GetComponent<Button>();
+            button.targetGraphic = image;
+            button.onClick.AddListener(action);
+            var colors = button.colors;
+            colors.highlightedColor = new Color(1f, 0.92f, 0.68f, 1f);
+            colors.pressedColor = new Color(0.78f, 0.75f, 0.57f, 1f);
+            button.colors = colors;
+
+            CreateLabel(buttonObject.transform, "Label", label,
+                new Vector2(5f, -4f), new Vector2(size.x - 10f, size.y - 8f), 20, TextAnchor.MiddleCenter);
+            return button;
+        }
+
+        private static Text CreateLabel(
+            Transform parent,
+            string objectName,
+            string content,
+            Vector2 topLeftPosition,
+            Vector2 size,
+            int fontSize,
+            TextAnchor alignment)
+        {
+            var labelObject = new GameObject(objectName, typeof(RectTransform), typeof(Text));
+            labelObject.transform.SetParent(parent, false);
+            var rect = labelObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = topLeftPosition;
+            rect.sizeDelta = size;
+
+            var text = labelObject.GetComponent<Text>();
+            text.text = content;
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.fontSize = fontSize;
+            text.alignment = alignment;
+            text.color = new Color32(250, 240, 210, 255);
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.raycastTarget = false;
+            return text;
+        }
+
+        private void CycleResidentJob(int index)
+        {
+            if (residents == null || index >= residents.Residents.Count)
+                return;
+            residents.CycleJob(residents.Residents[index].id);
+        }
+
+        private IEnumerator RefreshReadouts()
+        {
+            while (true)
+            {
+                RefreshText();
+                yield return new WaitForSecondsRealtime(1f);
+            }
+        }
+
+        private void RefreshText()
+        {
+            var save = WorldSaveSystem.Instance;
+            if (save != null && resourcesText != null)
+            {
+                resourcesText.text = "Food  " + save.Food +
+                    "       Wood  " + save.Wood +
+                    "       Stone  " + save.Stone;
+            }
+
+            if (progression != null && settlementText != null)
+            {
+                settlementText.text = progression.NeedsCampfire
+                    ? "CHOOSE YOUR CAMPFIRE LOCATION"
+                    : "CAMPFIRE · LEVEL " + progression.CampfireLevel +
+                      "     BUILD QUEUE " + progression.QueuedBuildings;
+            }
+
+            if (residents != null)
+            {
+                for (var i = 0; i < residentLines.Length; i++)
+                {
+                    var present = i < residents.Residents.Count;
+                    residentLines[i].gameObject.SetActive(present);
+                    residentJobButtons[i].gameObject.SetActive(present);
+                    if (!present)
+                        continue;
+
+                    var resident = residents.Residents[i];
+                    residentLines[i].text = resident.displayName + " · " + resident.LifeStage;
+                    residentJobButtons[i].GetComponentInChildren<Text>().text =
+                        resident.LifeStage == ResidentLifeStage.Child
+                            ? "Learning " + resident.job
+                            : resident.job + " Lv." + resident.jobLevel;
+                    residentJobButtons[i].interactable = resident.LifeStage != ResidentLifeStage.Child;
+                }
+            }
+
+            if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
+            {
+                var season = seasonDirector.ActiveSeason;
+                seasonText.text = season.displayName + "\n" +
+                    season.eraLabel + " · Day " + (seasonDirector.SeasonDay + 1) +
+                    " / " + season.durationDays;
+            }
+        }
+    }
+}
