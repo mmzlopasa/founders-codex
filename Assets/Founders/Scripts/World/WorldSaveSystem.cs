@@ -31,6 +31,8 @@ namespace Founders.World
             public int food;
             public int wood;
             public int stone;
+            public int constructionSpeedups = 3;
+            public int farmingSpeedups = 2;
         }
 
         private SaveData data = new SaveData();
@@ -40,6 +42,8 @@ namespace Founders.World
         public int Food => data.food;
         public int Wood => data.wood;
         public int Stone => data.stone;
+        public int ConstructionSpeedups => data.constructionSpeedups;
+        public int FarmingSpeedups => data.farmingSpeedups;
 
         private void Awake()
         {
@@ -71,6 +75,36 @@ namespace Founders.World
 
             data.clearedNaturalProps.Add(stableId);
             Save();
+        }
+
+        public bool TrySpendResources(int food, int wood, int stone)
+        {
+            if (data.food < food || data.wood < wood || data.stone < stone)
+                return false;
+
+            data.food -= Mathf.Max(0, food);
+            data.wood -= Mathf.Max(0, wood);
+            data.stone -= Mathf.Max(0, stone);
+            Save();
+            return true;
+        }
+
+        public bool TrySpendConstructionSpeedup()
+        {
+            if (data.constructionSpeedups <= 0)
+                return false;
+            data.constructionSpeedups--;
+            Save();
+            return true;
+        }
+
+        public bool TrySpendFarmingSpeedup()
+        {
+            if (data.farmingSpeedups <= 0)
+                return false;
+            data.farmingSpeedups--;
+            Save();
+            return true;
         }
 
         public void AddResources(int food, int wood, int stone)
