@@ -257,8 +257,8 @@ namespace Founders.World
                 return;
 
             var random = new System.Random(ChunkSeed(coordinate));
-            ScatterCategory(random, coordinate, data, root, assetCatalog.vegetationPrefabs, settings.vegetationInstancesPerChunk);
-            ScatterCategory(random, coordinate, data, root, assetCatalog.rockPrefabs, settings.rockInstancesPerChunk);
+            ScatterCategory(random, coordinate, data, root, assetCatalog.vegetationPrefabs, settings.vegetationInstancesPerChunk, NaturalPropKind.Vegetation);
+            ScatterCategory(random, coordinate, data, root, assetCatalog.rockPrefabs, settings.rockInstancesPerChunk, NaturalPropKind.Rock);
         }
 
         private void ScatterCategory(
@@ -267,7 +267,8 @@ namespace Founders.World
             TerrainData data,
             Transform root,
             GameObject[] prefabs,
-            int count)
+            int count,
+            NaturalPropKind kind)
         {
             if (prefabs == null || prefabs.Length == 0 || count <= 0)
                 return;
@@ -302,6 +303,10 @@ namespace Founders.World
                     settings.maximumPropScale,
                     (float)random.NextDouble());
                 instance.transform.localScale *= scale;
+
+                var marker = instance.AddComponent<NaturalPropMarker>();
+                marker.kind = kind;
+                marker.EnsureBoundsCollider();
             }
         }
 
