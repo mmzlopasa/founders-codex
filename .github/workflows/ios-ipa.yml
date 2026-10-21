@@ -18,10 +18,44 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 120
     steps:
-      - name: Check out project
+      - name: Check out game project
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Check for private asset repository access
+        id: asset-access
+        shell: bash
+        env:
+          ASSET_REPO_TOKEN: ${{ secrets.FOUNDERS_ASSET_REPO_TOKEN }}
+        run: |
+          if [[ -n "$ASSET_REPO_TOKEN" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Private Asset Store files are not configured; this run will use project fallback content."
+          fi
+
+      - name: Check out licensed Unity assets
+        if: steps.asset-access.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: mmzlopasa/founders-codex-assets
+          token: ${{ secrets.FOUNDERS_ASSET_REPO_TOKEN }}
+          path: .private-assets
+          lfs: true
+
+      - name: Import licensed Unity assets into the project
+        if: steps.asset-access.outputs.available == 'true'
+        shell: bash
+        run: |
+          source_assets=".private-assets/Assets/StoreAssets"
+          if [[ ! -d "$source_assets" ]]; then
+            echo "Private asset repository must contain Assets/StoreAssets."
+            exit 1
+          fi
+          mkdir -p Assets/StoreAssets
+          rsync -a --exclude='.git' "$source_assets/" Assets/StoreAssets/
 
       - name: Check Unity credentials
         shell: bash
