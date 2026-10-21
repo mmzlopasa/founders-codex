@@ -20,10 +20,26 @@ namespace Founders.EditorTools
             "tree", "pine", "vegetation", "plant", "bush", "shrub", "flower", "grass",
             "fern", "mushroom", "vegetable", "grain", "crop", "leaf", "foliage"
         };
-
         private static readonly string[] RockTokens =
         {
             "rock", "stone", "cliff", "boulder", "obelisk", "canyon", "pebble", "pavement"
+        };
+        private static readonly string[] WaterTokens =
+        {
+            "water", "lake", "river", "shore", "waterfall", "pond", "stream"
+        };
+        private static readonly string[] BuildingTokens =
+        {
+            "hut", "house", "tent", "camp", "shrine", "tower", "bridge", "building", "structure",
+            "gate", "wall", "shelter", "village"
+        };
+        private static readonly string[] CharacterTokens =
+        {
+            "character", "human", "male", "female", "body", "hair", "clothing", "skin"
+        };
+        private static readonly string[] EffectTokens =
+        {
+            "particle", "fire", "fog", "butterfly", "swarm", "sunshaft", "smoke", "effect"
         };
 
         [MenuItem("Founders/World/Build Asset Catalog")]
@@ -33,6 +49,10 @@ namespace Founders.EditorTools
 
             var vegetation = new List<GameObject>();
             var rocks = new List<GameObject>();
+            var water = new List<GameObject>();
+            var buildings = new List<GameObject>();
+            var characters = new List<GameObject>();
+            var effects = new List<GameObject>();
             var environment = new List<GameObject>();
 
             foreach (var guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" }))
@@ -52,6 +72,14 @@ namespace Founders.EditorTools
                     vegetation.Add(prefab);
                 else if (ContainsAny(searchable, RockTokens))
                     rocks.Add(prefab);
+                else if (ContainsAny(searchable, WaterTokens))
+                    water.Add(prefab);
+                else if (ContainsAny(searchable, BuildingTokens))
+                    buildings.Add(prefab);
+                else if (ContainsAny(searchable, CharacterTokens))
+                    characters.Add(prefab);
+                else if (ContainsAny(searchable, EffectTokens))
+                    effects.Add(prefab);
             }
 
             var terrainLayers = AssetDatabase.FindAssets("t:TerrainLayer", new[] { "Assets" })
@@ -60,6 +88,15 @@ namespace Founders.EditorTools
                 .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
                 .Select(AssetDatabase.LoadAssetAtPath<TerrainLayer>)
                 .Where(layer => layer != null)
+                .ToArray();
+
+            var skyMaterials = AssetDatabase.FindAssets("t:Material", new[] { "Assets" })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => !string.IsNullOrEmpty(path))
+                .Select(path => AssetDatabase.LoadAssetAtPath<Material>(path))
+                .Where(material => material != null &&
+                    ((material.shader != null && material.shader.name.IndexOf("skybox", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                     material.name.IndexOf("sky", StringComparison.OrdinalIgnoreCase) >= 0))
                 .ToArray();
 
             var catalog = AssetDatabase.LoadAssetAtPath<WorldAssetCatalog>(CatalogPath);
@@ -71,8 +108,13 @@ namespace Founders.EditorTools
 
             catalog.vegetationPrefabs = vegetation.Distinct().ToArray();
             catalog.rockPrefabs = rocks.Distinct().ToArray();
+            catalog.waterPrefabs = water.Distinct().ToArray();
+            catalog.buildingPrefabs = buildings.Distinct().ToArray();
+            catalog.characterPrefabs = characters.Distinct().ToArray();
+            catalog.effectPrefabs = effects.Distinct().ToArray();
             catalog.terrainLayers = terrainLayers;
             catalog.environmentPrefabs = environment.Distinct().ToArray();
+            catalog.skyMaterials = skyMaterials.Distinct().ToArray();
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
 
@@ -81,7 +123,12 @@ namespace Founders.EditorTools
                 ". Prefabs: " + environment.Count +
                 ", vegetation: " + vegetation.Count +
                 ", rocks: " + rocks.Count +
+                ", water: " + water.Count +
+                ", buildings: " + buildings.Count +
+                ", characters: " + characters.Count +
+                ", effects: " + effects.Count +
                 ", terrain layers: " + terrainLayers.Length +
+                ", sky materials: " + skyMaterials.Length +
                 ". Review the catalog before building a scene.");
             Selection.activeObject = catalog;
         }
