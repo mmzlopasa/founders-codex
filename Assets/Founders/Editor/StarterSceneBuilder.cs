@@ -65,6 +65,7 @@ namespace Founders.EditorTools
 
             RenderSettings.ambientLight = new Color(0.58f, 0.62f, 0.59f);
             EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Selection.activeGameObject = world;
 
