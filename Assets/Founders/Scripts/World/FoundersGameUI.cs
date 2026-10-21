@@ -21,6 +21,8 @@ namespace Founders.World
         private Text resourcesText;
         private Text settlementText;
         private Text seasonText;
+        private Text buildingHint;
+        private Text progressionMessage;
         private Text loadingLabel;
         private GameObject loadingOverlay;
         private Text[] residentLines;
@@ -97,12 +99,25 @@ namespace Founders.World
             root.offsetMin = Vector2.zero;
             root.offsetMax = Vector2.zero;
 
-            CreateResourcePanel(root);
-            CreateResidentsPanel(root);
-            CreateProgressionPanel(root);
-            CreateBuildingPanel(root);
-            CreateSeasonPanel(root);
+            var safeRoot = CreateSafeAreaRoot(root);
+            CreateResourcePanel(safeRoot);
+            CreateResidentsPanel(safeRoot);
+            CreateProgressionPanel(safeRoot);
+            CreateBuildingPanel(safeRoot);
+            CreateSeasonPanel(safeRoot);
             CreateLoadingOverlay(root);
+        }
+
+        private static RectTransform CreateSafeAreaRoot(RectTransform parent)
+        {
+            var safe = Screen.safeArea;
+            var rect = new GameObject("Safe Area", typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(safe.xMin / Screen.width, safe.yMin / Screen.height);
+            rect.anchorMax = new Vector2(safe.xMax / Screen.width, safe.yMax / Screen.height);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            return rect;
         }
 
         private void CreateResourcePanel(RectTransform root)
@@ -116,29 +131,29 @@ namespace Founders.World
         private void CreateResidentsPanel(RectTransform root)
         {
             var panel = CreatePanel(root, "Residents Panel", Vector2.zero, Vector2.zero,
-                new Vector2(18f, 18f), new Vector2(430f, 380f), new Vector2(0f, 0f));
+                new Vector2(18f, 18f), new Vector2(430f, 520f), new Vector2(0f, 0f));
             CreateLabel(panel.transform, "Residents Title", "SETTLEMENT · RESIDENTS",
                 new Vector2(18f, -14f), new Vector2(394f, 40f), 24, TextAnchor.MiddleLeft);
 
-            residentLines = new Text[4];
-            residentJobButtons = new Button[4];
+            residentLines = new Text[8];
+            residentJobButtons = new Button[8];
             for (var i = 0; i < residentLines.Length; i++)
             {
-                var rowY = 66f + i * 52f;
+                var rowY = 62f + i * 44f;
                 residentLines[i] = CreateLabel(panel.transform, "Resident " + i, string.Empty,
-                    new Vector2(20f, -rowY), new Vector2(230f, 42f), 19, TextAnchor.MiddleLeft);
+                    new Vector2(20f, -rowY), new Vector2(230f, 38f), 18, TextAnchor.MiddleLeft);
                 residentJobButtons[i] = CreateButton(panel.transform, "Job " + i, "Job",
-                    new Vector2(260f, -rowY), new Vector2(150f, 42f), () => CycleResidentJob(i));
+                    new Vector2(260f, -rowY), new Vector2(150f, 38f), () => CycleResidentJob(i));
             }
 
             CreateButton(panel.transform, "Farm Boost", "Farm boost",
-                new Vector2(18f, -292f), new Vector2(184f, 48f), () =>
+                new Vector2(18f, -455f), new Vector2(184f, 48f), () =>
                 {
                     if (residents != null)
                         residents.UseFarmingSpeedup();
                 });
             CreateButton(panel.transform, "Pair Residents", "Pair adults",
-                new Vector2(210f, -292f), new Vector2(200f, 48f), () =>
+                new Vector2(210f, -455f), new Vector2(200f, 48f), () =>
                 {
                     if (residents != null)
                         residents.FormFirstAvailableHousehold();
@@ -163,6 +178,8 @@ namespace Founders.World
                     if (progression != null)
                         progression.TryUseConstructionSpeedup();
                 });
+            progressionMessage = CreateLabel(panel.transform, "Progression Message", string.Empty,
+                new Vector2(18f, -145f), new Vector2(394f, 58f), 16, TextAnchor.MiddleLeft);
         }
 
         private void CreateBuildingPanel(RectTransform root)
@@ -175,7 +192,7 @@ namespace Founders.World
                     if (buildingPlacement != null)
                         buildingPlacement.SelectPreviousBuilding();
                 });
-            CreateLabel(panel.transform, "Building Hint", "BUILD · GATHER · EXPAND",
+            buildingHint = CreateLabel(panel.transform, "Building Hint", "BUILD · GATHER · EXPAND",
                 new Vector2(108f, -18f), new Vector2(400f, 32f), 19, TextAnchor.MiddleCenter);
             CreateButton(panel.transform, "Rotate Building", "Rotate",
                 new Vector2(150f, -57f), new Vector2(145f, 42f), () =>
@@ -361,6 +378,15 @@ namespace Founders.World
                     ? "CHOOSE YOUR CAMPFIRE LOCATION"
                     : "CAMPFIRE · LEVEL " + progression.CampfireLevel +
                       "     BUILD QUEUE " + progression.QueuedBuildings;
+                if (progressionMessage != null)
+                    progressionMessage.text = progression.StatusMessage;
+            }
+
+            if (buildingPlacement != null && buildingHint != null)
+            {
+                buildingHint.text = progression != null && progression.NeedsCampfire
+                    ? "Choose a place for your first campfire"
+                    : buildingPlacement.SelectedBuildingName + " · tap open ground to build";
             }
 
             if (residents != null)
@@ -386,9 +412,22 @@ namespace Founders.World
             if (seasonDirector != null && seasonDirector.ActiveSeason != null && seasonText != null)
             {
                 var season = seasonDirector.ActiveSeason;
+                var eventLine = string.Empty;
+                if (season.events != null)
+                {
+                    foreach (var item in season.events)
+                    {
+                        if (item == null || seasonDirector.IsComplete(item) ||
+                            seasonDirector.SeasonDay < item.startsOnDay ||
+                            seasonDirector.SeasonDay >= item.startsOnDay + item.durationDays)
+                            continue;
+                        eventLine = item.title + " · " + seasonDirector.GetProgress(item) + "/" + item.progressGoal;
+                        break;
+                    }
+                }
                 seasonText.text = season.displayName + "\n" +
                     season.eraLabel + " · Day " + (seasonDirector.SeasonDay + 1) +
-                    " / " + season.durationDays;
+                    " / " + season.durationDays + "\n" + eventLine;
             }
         }
     }
