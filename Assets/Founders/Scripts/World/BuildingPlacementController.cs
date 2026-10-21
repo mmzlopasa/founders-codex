@@ -176,9 +176,12 @@ namespace Founders.World
         {
             if (pointerDown && !dragged)
             {
-                UpdatePlacementPoint(position);
-                if (canPlace)
-                    PlaceSelectedBuilding();
+                if (!GatherNaturalProp(position))
+                {
+                    UpdatePlacementPoint(position);
+                    if (canPlace)
+                        PlaceSelectedBuilding();
+                }
             }
 
             pointerDown = false;
@@ -216,6 +219,49 @@ namespace Founders.World
                 block.SetColor(ColorId, tint);
                 renderer.SetPropertyBlock(block);
             }
+        }
+
+        private bool GatherNaturalProp(Vector2 screenPosition)
+        {
+            if (mapCamera == null)
+                return false;
+
+            var ray = mapCamera.ScreenPointToRay(screenPosition);
+            var hits = Physics.RaycastAll(ray, rayDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits, (left, right) => left.distance.CompareTo(right.distance));
+
+            foreach (var hit in hits)
+            {
+                var marker = hit.collider.GetComponentInParent<NaturalPropMarker>();
+                if (marker == null)
+                    continue;
+
+                var save = WorldSaveSystem.Instance;
+                if (marker.kind == NaturalPropKind.Vegetation)
+                {
+                    if (save != null)
+                        save.AddResources(2, 4, 0);
+                    if (seasonDirector != null)
+                    {
+                        seasonDirector.ReportProgress(SeasonObjective.GatherFood, 2);
+                        seasonDirector.ReportProgress(SeasonObjective.GatherWood, 4);
+                    }
+                }
+                else
+                {
+                    if (save != null)
+                        save.AddResources(0, 0, 6);
+                    if (seasonDirector != null)
+                        seasonDirector.ReportProgress(SeasonObjective.GatherStone, 6);
+                }
+
+                if (save != null)
+                    save.RegisterClearedNaturalProp(marker.stableId);
+                Destroy(marker.gameObject);
+                return true;
+            }
+
+            return false;
         }
 
         private bool UpdatePlacementPoint(Vector2 screenPosition)
@@ -291,6 +337,9 @@ namespace Founders.World
 
             GUILayout.BeginArea(new Rect(20f, Screen.height - 150f, 360f, 130f), GUI.skin.box);
             GUILayout.Label("PREHISTORIC BUILDING");
+            var save = WorldSaveSystem.Instance;
+            if (save != null)
+                GUILayout.Label("Food " + save.Food + "   Wood " + save.Wood + "   Stone " + save.Stone);
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("‹", GUILayout.Width(56f), GUILayout.Height(54f)))
