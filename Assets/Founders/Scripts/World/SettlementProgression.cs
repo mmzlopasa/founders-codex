@@ -37,6 +37,7 @@ namespace Founders.World
 
         private ProgressData data = new ProgressData();
         private string message = string.Empty;
+        private float saveTimer;
 
         public bool NeedsCampfire => !data.campfirePlaced;
         public int CampfireLevel => data.campfireLevel;
@@ -67,9 +68,18 @@ namespace Founders.World
 
             data.orders[0].secondsRemaining -= Time.deltaTime;
             if (data.orders[0].secondsRemaining <= 0f)
+            {
                 CompleteFirstOrder();
+            }
             else
-                Save();
+            {
+                saveTimer += Time.deltaTime;
+                if (saveTimer >= 5f)
+                {
+                    saveTimer = 0f;
+                    Save();
+                }
+            }
         }
 
         public void RegisterCampfire()
