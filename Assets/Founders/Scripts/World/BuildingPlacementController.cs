@@ -47,7 +47,34 @@ namespace Founders.World
                 }
             }
 
+            RestoreSavedBuildings();
             CreatePreview();
+        }
+
+        private void RestoreSavedBuildings()
+        {
+            var save = WorldSaveSystem.Instance;
+            if (save == null)
+                return;
+
+            foreach (var record in save.Buildings)
+            {
+                if (record == null || buildings.Count == 0)
+                    continue;
+
+                var index = Mathf.Clamp(record.prefabIndex, 0, buildings.Count - 1);
+                if (!string.IsNullOrEmpty(record.prefabName) && buildings[index].name != record.prefabName)
+                {
+                    index = buildings.FindIndex(prefab => prefab != null && prefab.name == record.prefabName);
+                    if (index < 0)
+                        continue;
+                }
+
+                Instantiate(
+                    buildings[index],
+                    record.position,
+                    Quaternion.Euler(record.eulerAngles));
+            }
         }
 
         private void OnDestroy()
@@ -237,10 +264,12 @@ namespace Founders.World
                 return;
 
             ClearNaturalProps();
-            Instantiate(
-                buildings[selectedIndex],
-                placePosition,
-                Quaternion.Euler(0f, rotationY, 0f));
+            var rotation = Quaternion.Euler(0f, rotationY, 0f);
+            Instantiate(buildings[selectedIndex], placePosition, rotation);
+
+            var save = WorldSaveSystem.Instance;
+            if (save != null)
+                save.RegisterBuilding(selectedIndex, buildings[selectedIndex].name, placePosition, rotation);
 
             if (seasonDirector != null)
                 seasonDirector.ReportProgress(SeasonObjective.PlaceBuildings);
@@ -309,8 +338,13 @@ namespace Founders.World
                 toRemove.Add(marker);
             }
 
+            var save = WorldSaveSystem.Instance;
             foreach (var marker in toRemove)
+            {
+                if (save != null)
+                    save.RegisterClearedNaturalProp(marker.stableId);
                 Destroy(marker.gameObject);
+            }
         }
     }
 }
