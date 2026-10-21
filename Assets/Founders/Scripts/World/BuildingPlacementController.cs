@@ -187,13 +187,27 @@ namespace Founders.World
 
         private void BeginPointer(Vector2 position, int pointerId = -1)
         {
-            if (IsOverToolbar(position) ||
-                (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(pointerId)))
+            if (IsOverToolbar(position) || IsOverGameUi(position, pointerId))
                 return;
 
             pressPosition = position;
             pointerDown = true;
             dragged = false;
+        }
+
+        private static bool IsOverGameUi(Vector2 position, int pointerId)
+        {
+            if (EventSystem.current == null)
+                return false;
+
+            var eventData = new PointerEventData(EventSystem.current)
+            {
+                position = position,
+                pointerId = pointerId
+            };
+            var hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, hits);
+            return hits.Count > 0;
         }
 
         private void MovePointer(Vector2 position)
