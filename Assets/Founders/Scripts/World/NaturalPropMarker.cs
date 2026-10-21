@@ -15,6 +15,7 @@ namespace Founders.World
     public sealed class NaturalPropMarker : MonoBehaviour
     {
         public NaturalPropKind kind;
+        public string stableId;
 
         public void EnsureBoundsCollider()
         {
