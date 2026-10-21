@@ -197,7 +197,10 @@ namespace Founders.World
             var rect = overlay.GetComponent<RectTransform>();
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
-            overlay.GetComponent<Image>().color = new Color32(20, 30, 28, 245);
+            var overlayImage = overlay.GetComponent<Image>();
+            var loadingBackground = FindSprite("prehistoric_loading_background");
+            overlayImage.sprite = loadingBackground;
+            overlayImage.color = loadingBackground != null ? Color.white : new Color32(20, 30, 28, 245);
 
             var card = CreatePanel(rect, "Loading Card", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                 Vector2.zero, new Vector2(740f, 310f));
