@@ -22,6 +22,7 @@ namespace Founders.World
         private Text settlementText;
         private Text seasonText;
         private Text loadingLabel;
+        private GameObject loadingOverlay;
         private Text[] residentLines;
         private Button[] residentJobButtons;
         private Sprite panelSprite;
@@ -33,6 +34,9 @@ namespace Founders.World
             buttonSprite = FindSprite("button");
             CreateEventSystem();
             CreateInterface();
+            WorldStreamer.FirstChunkGenerated += HideLoadingOverlay;
+            if (WorldStreamer.HasGeneratedAnyChunk)
+                HideLoadingOverlay();
             StartCoroutine(RefreshReadouts());
             StartCoroutine(ShowLoadingIntro());
         }
@@ -66,6 +70,11 @@ namespace Founders.World
             var eventSystem = new GameObject("EventSystem");
             eventSystem.AddComponent<EventSystem>();
             eventSystem.AddComponent<StandaloneInputModule>();
+        }
+
+        private void OnDisable()
+        {
+            WorldStreamer.FirstChunkGenerated -= HideLoadingOverlay;
         }
 
         private void CreateInterface()
@@ -194,6 +203,7 @@ namespace Founders.World
         {
             var overlay = CreatePanel(root, "Loading Overlay", Vector2.zero, Vector2.one,
                 Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
+            loadingOverlay = overlay;
             var rect = overlay.GetComponent<RectTransform>();
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
@@ -208,14 +218,12 @@ namespace Founders.World
                 new Vector2(30f, -44f), new Vector2(680f, 150f), 42, TextAnchor.MiddleCenter);
             loadingLabel = CreateLabel(card.transform, "Loading Text", "PREPARING THE VALLEY",
                 new Vector2(30f, -206f), new Vector2(680f, 54f), 22, TextAnchor.MiddleCenter);
-            StartCoroutine(HideLoadingAfterDelay(overlay));
         }
 
-        private IEnumerator HideLoadingAfterDelay(GameObject overlay)
+        private void HideLoadingOverlay()
         {
-            yield return new WaitForSecondsRealtime(2f);
-            if (overlay != null)
-                overlay.SetActive(false);
+            if (loadingOverlay != null)
+                loadingOverlay.SetActive(false);
         }
 
         private IEnumerator ShowLoadingIntro()
