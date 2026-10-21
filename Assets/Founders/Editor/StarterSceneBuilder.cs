@@ -56,6 +56,12 @@ namespace Founders.EditorTools
             camera.transform.LookAt(Vector3.zero);
             camera.gameObject.AddComponent<MobileMapCamera>();
 
+            var placer = world.AddComponent<BuildingPlacementController>();
+            var serializedPlacer = new SerializedObject(placer);
+            serializedPlacer.FindProperty("assetCatalog").objectReferenceValue = catalog;
+            serializedPlacer.FindProperty("mapCamera").objectReferenceValue = camera;
+            serializedPlacer.ApplyModifiedPropertiesWithoutUndo();
+
             var light = Object.FindFirstObjectByType<Light>();
             if (light != null)
             {
