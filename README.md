@@ -27,13 +27,15 @@ The player can build anywhere on the map. A building clears vegetation and natur
 - Local device saves for buildings, resources, cleared natural props, season clock, event progress, resident jobs, and population.
 - Campfire-first settlement progression, level-based unlocks, a timed construction queue, and construction/farming speedups.
 - Residents with assignable jobs, skill levels, resource production, households, and nonsexual parent-to-child mentoring.
-- A Unity Editor generator that scans imported assets and UI sprites, builds the prehistoric catalog, and creates the starter scene.
+- A touch-first uGUI HUD that uses imported Adventure UI Kit sprites when present, with a functional fallback until the package is available.
+- Remote Unity Editor generation of the app icon and prehistoric loading-screen background.
+- An Editor generator that inventories imported assets, adds blockout settlement prefabs if licensed buildings are not available, and creates the starter scene.
 - A manual GitHub Actions workflow for remote iOS Xcode project export.
 
 ## Pending before an asset-complete IPA
 
-- Make the two licensed Asset Store packages available to the remote Unity build without publishing their binaries in this public repo.
+- Make the licensed Asset Store packages available to the remote Unity build without publishing their binaries in this public repo; the HUD and asset catalog are ready to use Adventure UI Kit sprites after import.
 - Add Unity build and Apple signing secrets in GitHub Actions.
-- Run and fix the first remote Unity build, then export and sign the Feather-installable IPA.
+- Run and fix the first remote Unity build, add schedule-driven resident characters and the research tree, then export and sign the Feather-installable IPA.
 
 See [docs/GAME_PLAN.md](docs/GAME_PLAN.md), the [feature roadmap](docs/FEATURE_ROADMAP.md), and [remote build setup](docs/REMOTE_BUILD.md). The current repository has not yet been built in Unity; generated scene and catalog content depend on the package import step.
