@@ -81,7 +81,44 @@ namespace Founders.Seasons
             return PlayerPrefs.GetInt(key, 0);
         }
 
-        public bool CanClaimReward\n        {\n            get\n            {\n                if (season == null || season.events == null) return false;\n                foreach (var item in season.events)\n                    if (item != null && IsComplete(item) && PlayerPrefs.GetInt(ClaimKey(item), 0) == 0) return true;\n                return false;\n            }\n        }\n\n        public bool TryClaimReward()\n        {\n            if (season == null || season.events == null) return false;\n            foreach (var item in season.events)\n            {\n                if (item == null || !IsComplete(item) || PlayerPrefs.GetInt(ClaimKey(item), 0) != 0) continue;\n                var save = WorldSaveSystem.Instance;\n                if (save == null) return false;\n                var reward = (item.rewardLabel ?? string.Empty).ToLowerInvariant();\n                if (reward.Contains(\"food\")) save.AddResources(item.rewardAmount, 0, 0);\n                else if (reward.Contains(\"wood\")) save.AddResources(0, item.rewardAmount, 0);\n                else if (reward.Contains(\"stone\")) save.AddResources(0, 0, item.rewardAmount);\n                else if (reward.Contains(\"speedup\")) save.AddSpeedups(1, 0);\n                else save.AddSeasonPoints(item.rewardAmount);\n                PlayerPrefs.SetInt(ClaimKey(item), 1);\n                PlayerPrefs.Save();\n                return true;\n            }\n            return false;\n        }\n\n        private string ClaimKey(SeasonEventDefinition item)\n        {\n            return \"Founders.Event.\" + season.seasonId + \".\" + item.eventId + \".Claimed\";\n        }\n\n        public bool IsComplete(SeasonEventDefinition eventDefinition)
+        public bool CanClaimReward
+        {
+            get
+            {
+                if (season == null || season.events == null) return false;
+                foreach (var item in season.events)
+                    if (item != null && IsComplete(item) && PlayerPrefs.GetInt(ClaimKey(item), 0) == 0) return true;
+                return false;
+            }
+        }
+
+        public bool TryClaimReward()
+        {
+            if (season == null || season.events == null) return false;
+            foreach (var item in season.events)
+            {
+                if (item == null || !IsComplete(item) || PlayerPrefs.GetInt(ClaimKey(item), 0) != 0) continue;
+                var save = WorldSaveSystem.Instance;
+                if (save == null) return false;
+                var reward = (item.rewardLabel ?? string.Empty).ToLowerInvariant();
+                if (reward.Contains("food")) save.AddResources(item.rewardAmount, 0, 0);
+                else if (reward.Contains("wood")) save.AddResources(0, item.rewardAmount, 0);
+                else if (reward.Contains("stone")) save.AddResources(0, 0, item.rewardAmount);
+                else if (reward.Contains("speedup")) save.AddSpeedups(1, 0);
+                else save.AddSeasonPoints(item.rewardAmount);
+                PlayerPrefs.SetInt(ClaimKey(item), 1);
+                PlayerPrefs.Save();
+                return true;
+            }
+            return false;
+        }
+
+        private string ClaimKey(SeasonEventDefinition item)
+        {
+            return "Founders.Event." + season.seasonId + "." + item.eventId + ".Claimed";
+        }
+
+        public bool IsComplete(SeasonEventDefinition eventDefinition)
         {
             return eventDefinition != null && completedEvents.Contains(ProgressKey(eventDefinition));
         }
