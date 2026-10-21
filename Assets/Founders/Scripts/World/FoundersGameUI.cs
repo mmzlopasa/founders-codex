@@ -110,7 +110,8 @@ namespace Founders.World
             CreateResidentsPanel(safeRoot);
             CreateProgressionPanel(safeRoot);
             CreateBuildingPanel(safeRoot);
-            CreateSeasonPanel(safeRoot);\n            CreateResearchPanel(safeRoot);
+            CreateSeasonPanel(safeRoot);
+            CreateResearchPanel(safeRoot);
             CreateLoadingOverlay(root);
         }
 
