@@ -9,9 +9,19 @@ namespace Founders.World
         public GameObject[] vegetationPrefabs;
         [Tooltip("All discovered stone and rock prefabs.")]
         public GameObject[] rockPrefabs;
-        [Tooltip("Optional TerrainLayers discovered in the imported landscape packs.")]
+        [Tooltip("Discovered water environment prefabs.")]
+        public GameObject[] waterPrefabs;
+        [Tooltip("Prehistoric buildings and structures.")]
+        public GameObject[] buildingPrefabs;
+        [Tooltip("Character and character-part prefabs.")]
+        public GameObject[] characterPrefabs;
+        [Tooltip("Particle and environmental effect prefabs.")]
+        public GameObject[] effectPrefabs;
+        [Tooltip("TerrainLayers discovered in the imported landscape packs.")]
         public TerrainLayer[] terrainLayers;
-        [Tooltip("Remaining environment prefabs, retained for future biomes and landmarks.")]
+        [Tooltip("All discovered environment prefabs, including unclassified items.")]
         public GameObject[] environmentPrefabs;
+        [Tooltip("Skybox and environment materials found in the imported packs.")]
+        public Material[] skyMaterials;
     }
 }
