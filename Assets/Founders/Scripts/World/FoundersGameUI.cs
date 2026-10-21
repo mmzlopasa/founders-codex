@@ -15,7 +15,8 @@ namespace Founders.World
         [SerializeField] private WorldAssetCatalog assetCatalog;
         [SerializeField] private BuildingPlacementController buildingPlacement;
         [SerializeField] private SettlementProgression progression;
-        [SerializeField] private ResidentRoster residents;\n        [SerializeField] private SettlementResearch research;
+        [SerializeField] private ResidentRoster residents;
+        [SerializeField] private SettlementResearch research;
         [SerializeField] private SeasonDirector seasonDirector;
 
         private Text resourcesText;
@@ -26,7 +27,10 @@ namespace Founders.World
         private Text loadingLabel;
         private GameObject loadingOverlay;
         private Text[] residentLines;
-        private Button[] residentJobButtons;\n        private Text seasonRewardButtonLabel;\n        private Text researchStatus;\n        private Button[] researchButtons;
+        private Button[] residentJobButtons;
+        private Text seasonRewardButtonLabel;
+        private Text researchStatus;
+        private Button[] researchButtons;
         private Text farmBoostButtonLabel;
         private Text constructionSpeedupButtonLabel;
         private Sprite panelSprite;
@@ -402,7 +406,8 @@ namespace Founders.World
             {
                 resourcesText.text = "Food  " + save.Food +
                     "       Wood  " + save.Wood +
-                    "       Stone  " + save.Stone;
+                    "       Stone  " + save.Stone +
+                    "       Season Points  " + save.SeasonPoints;
             }
 
             if (progression != null && settlementText != null)
