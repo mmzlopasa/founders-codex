@@ -31,7 +31,7 @@ namespace Founders.World
 
         private void OnEnable()
         {
-            if (settings != null)
+            if (streamRoutine == null)
                 streamRoutine = StartCoroutine(StreamLoop());
         }
 
