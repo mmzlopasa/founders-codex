@@ -66,17 +66,20 @@ namespace Founders.EditorTools
             var seasonDirector = world.AddComponent<SeasonDirector>();
             var serializedSeason = new SerializedObject(seasonDirector);
             serializedSeason.FindProperty("season").objectReferenceValue = season;
+            serializedSeason.FindProperty("showHud").boolValue = false;
             serializedSeason.ApplyModifiedPropertiesWithoutUndo();
 
             var progression = world.AddComponent<SettlementProgression>();
             var serializedProgression = new SerializedObject(progression);
             serializedProgression.FindProperty("assetCatalog").objectReferenceValue = catalog;
             serializedProgression.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
+            serializedProgression.FindProperty("showHud").boolValue = false;
             serializedProgression.ApplyModifiedPropertiesWithoutUndo();
 
             var residents = world.AddComponent<ResidentRoster>();
             var serializedResidents = new SerializedObject(residents);
             serializedResidents.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
+            serializedResidents.FindProperty("showRoster").boolValue = false;
             serializedResidents.ApplyModifiedPropertiesWithoutUndo();
 
             var placer = world.AddComponent<BuildingPlacementController>();
@@ -84,7 +87,17 @@ namespace Founders.EditorTools
             serializedPlacer.FindProperty("assetCatalog").objectReferenceValue = catalog;
             serializedPlacer.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
             serializedPlacer.FindProperty("mapCamera").objectReferenceValue = camera;
+            serializedPlacer.FindProperty("showHud").boolValue = false;
             serializedPlacer.ApplyModifiedPropertiesWithoutUndo();
+
+            var gameUi = world.AddComponent<FoundersGameUI>();
+            var serializedUi = new SerializedObject(gameUi);
+            serializedUi.FindProperty("assetCatalog").objectReferenceValue = catalog;
+            serializedUi.FindProperty("buildingPlacement").objectReferenceValue = placer;
+            serializedUi.FindProperty("progression").objectReferenceValue = progression;
+            serializedUi.FindProperty("residents").objectReferenceValue = residents;
+            serializedUi.FindProperty("seasonDirector").objectReferenceValue = seasonDirector;
+            serializedUi.ApplyModifiedPropertiesWithoutUndo();
 
             var light = Object.FindFirstObjectByType<Light>();
             if (light != null)
