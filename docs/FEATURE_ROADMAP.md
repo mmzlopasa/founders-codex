@@ -39,8 +39,8 @@ Use the imported humanoid rigs and animation clips after the packages are invent
 ## Seasons, events, and research
 
 - Season 1: **Prehistoric Civilization**, with Stone Age structures, residents, resources, and events.
-- Seasonal events have dates, objectives, progress, and rewards. Claims must grant the listed reward to the save instead of showing a label only.
-- A research tree unlocks better tools, farming, animal husbandry, building speed, and campfire upgrades.
+- Seasonal events have dates, objectives, progress, and claimable rewards. The starter season includes basic persisted reward claiming; add reward-specific inventory types and additional event UI as the content set grows.
+- The prototype research panel has Stone Tools, Crop Rotation, and Organized Building; these improve farming yield and construction speed. Expand the tree with animal husbandry, tools, and campfire research.
 - Keep season content data-driven so future eras can supply their own catalog, research, events, and visual theme.
 
 ## iOS product requirements
@@ -52,6 +52,6 @@ Use the imported humanoid rigs and animation clips after the packages are invent
 
 ## Current code checkpoint
 
-The repository now has a procedural streamed world, free terrain placement, device saves, resource gathering, campfire-first progression, campfire levels and unlock rules, timed construction orders with consumable speedups, and resident roles, skills, households, child mentoring, and farming boosts. The generated Unity HUD uses UGUI and reads Adventure UI Kit sprites from the asset catalog. The remote Editor also generates an original app icon and loading-screen landscape, plus blockout buildings when no licensed building prefabs are available.
+The repository now has a procedural streamed world, free terrain placement, device saves, resource gathering, campfire-first progression, campfire levels and unlock rules, timed construction orders affected by builder skills and consumable speedups, resident roles and skills, household mentoring, farm boosts, three research upgrades, and persisted event reward claims. The generated Unity HUD uses UGUI and reads Adventure UI Kit sprites from the asset catalog. The remote Editor also generates an original app icon and loading-screen landscape, plus blockout buildings when no licensed building prefabs are available.
 
-The generated starter scene has not yet been run in Unity. The Asset Store packages have not been made available to the remote build, so the HUD uses its fallback skin and the catalog uses blockout structures. The resident roster currently simulates population and production data; visible resident actors with schedules and animation state machines, the tutorial, research, and claiming event rewards remain roadmap work.
+The generated starter scene has not yet been run in Unity. The Asset Store packages have not been made available to the remote build, so the HUD uses its fallback skin and the catalog uses blockout structures. The resident roster currently simulates population and production data; visible resident actors with schedules and animation state machines and the first-session tutorial remain roadmap work. Research and event claiming are functional prototypes; their content breadth and balance still need expansion.
