@@ -28,6 +28,7 @@ namespace Founders.EditorTools
             AssetDatabase.Refresh();
 
             EnsureUrp();
+            BrandingAssetBuilder.GenerateAssets();
             WorldAssetCatalogBuilder.BuildCatalog();
             WorldAssetCatalogBuilder.CreateSettings();
 
