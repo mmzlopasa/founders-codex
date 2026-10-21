@@ -18,7 +18,7 @@ namespace Founders.EditorTools
             StarterSceneBuilder.CreateScene();
 
             PlayerSettings.productName = "Founders: The Long Rise";
-            PlayerSettings.companyName = "Founders";
+            PlayerSettings.companyName = "SCYDE";
             PlayerSettings.bundleVersion = "0.1.0";
             PlayerSettings.SetApplicationIdentifier(
                 BuildTargetGroup.iOS,
