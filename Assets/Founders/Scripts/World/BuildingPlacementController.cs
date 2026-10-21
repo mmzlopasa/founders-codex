@@ -48,6 +48,8 @@ namespace Founders.World
             }
 
             RestoreSavedBuildings();
+            if (SettlementProgression.Instance != null && SettlementProgression.Instance.NeedsCampfire)
+                selectedIndex = FindCampfireIndex();
             CreatePreview();
         }
 
@@ -98,7 +100,28 @@ namespace Founders.World
                 return;
 
             selectedIndex = (index % buildings.Count + buildings.Count) % buildings.Count;
+            if (SettlementProgression.Instance != null && SettlementProgression.Instance.NeedsCampfire)
+                selectedIndex = FindCampfireIndex();
             CreatePreview();
+        }
+
+        private int FindCampfireIndex()
+        {
+            for (var i = 0; i < buildings.Count; i++)
+            {
+                var name = buildings[i].name.ToLowerInvariant();
+                if (name.Contains("campfire") || name.Contains("camp_fire"))
+                    return i;
+            }
+
+            for (var i = 0; i < buildings.Count; i++)
+            {
+                var name = buildings[i].name.ToLowerInvariant();
+                if (name.Contains("fire") || name.Contains("camp"))
+                    return i;
+            }
+
+            return 0;
         }
 
         public void SelectNextBuilding()
@@ -309,16 +332,37 @@ namespace Founders.World
             if (buildings.Count == 0)
                 return;
 
-            ClearNaturalProps();
+            var progression = SettlementProgression.Instance;
             var rotation = Quaternion.Euler(0f, rotationY, 0f);
-            Instantiate(buildings[selectedIndex], placePosition, rotation);
 
-            var save = WorldSaveSystem.Instance;
-            if (save != null)
-                save.RegisterBuilding(selectedIndex, buildings[selectedIndex].name, placePosition, rotation);
-
-            if (seasonDirector != null)
-                seasonDirector.ReportProgress(SeasonObjective.PlaceBuildings);
+            if (progression != null && progression.NeedsCampfire)
+            {
+                ClearNaturalProps();
+                var campfire = buildings[selectedIndex];
+                Instantiate(campfire, placePosition, rotation);
+                var save = WorldSaveSystem.Instance;
+                if (save != null)
+                    save.RegisterBuilding(selectedIndex, campfire.name, placePosition, rotation);
+                progression.RegisterCampfire();
+                if (seasonDirector != null)
+                    seasonDirector.ReportProgress(SeasonObjective.PlaceBuildings);
+            }
+            else if (progression != null)
+            {
+                if (!progression.TryStartConstruction(selectedIndex, buildings[selectedIndex], placePosition, rotation))
+                    return;
+                ClearNaturalProps();
+            }
+            else
+            {
+                ClearNaturalProps();
+                Instantiate(buildings[selectedIndex], placePosition, rotation);
+                var save = WorldSaveSystem.Instance;
+                if (save != null)
+                    save.RegisterBuilding(selectedIndex, buildings[selectedIndex].name, placePosition, rotation);
+                if (seasonDirector != null)
+                    seasonDirector.ReportProgress(SeasonObjective.PlaceBuildings);
+            }
 
             CreatePreview();
         }
@@ -336,7 +380,10 @@ namespace Founders.World
                 return;
 
             GUILayout.BeginArea(new Rect(20f, Screen.height - 150f, 360f, 130f), GUI.skin.box);
-            GUILayout.Label("PREHISTORIC BUILDING");
+            var progression = SettlementProgression.Instance;
+            GUILayout.Label(progression != null && progression.NeedsCampfire
+                ? "CHOOSE YOUR CAMPFIRE LOCATION"
+                : "PREHISTORIC BUILDING");
             GUILayout.Label("Tap a tree or rock to gather. Tap open land to build.");
             var save = WorldSaveSystem.Instance;
             if (save != null)
